@@ -1,0 +1,14 @@
+<div class="chart-container">
+  <canvas id="{{ chartId }}"></canvas>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('{{ chartId }}');
+  new Chart(ctx, {
+    type: '{{ chartType }}',
+    data: {{ chartData | safe }},
+    options: {{ chartOptions | safe }}
+  });
+});
+</script>

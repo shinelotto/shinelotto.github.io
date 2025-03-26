@@ -1,0 +1,1 @@
+# shinelotto.github.io
