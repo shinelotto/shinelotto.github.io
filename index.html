@@ -56,7 +56,6 @@
             border: 1px solid #eee;
         }
 
-        /* 新增表格样式 */
         .trend-table-container {
             overflow-x: auto;
             margin: 15px 0;
@@ -111,7 +110,6 @@
             color: white;
         }
 
-        /* 分页样式 */
         .pagination {
             margin-top: 20px;
             display: flex;
@@ -133,7 +131,6 @@
             border-color: #c0392b;
         }
 
-        /* 加载状态 */
         .loading, .error {
             padding: 20px;
             text-align: center;
@@ -166,7 +163,6 @@
             <p>基于机器学习的智能号码推荐</p>
         </div>
 
-        <!-- 智能推荐模块 -->
         <div class="recommend-section">
             <h3>本期智能推荐</h3>
             <div class="recommend-balls">
@@ -191,11 +187,10 @@
             </div>
         </div>
 
-        <!-- 历史开奖结果模块 -->
         <div class="recommend-section">
             <h3>历史开奖数据分析</h3>
             <div class="control-panel">
-                <button class="btn active" onclick="loadRecentData(50)">最近50期</button>
+                <button class="btn" onclick="loadRecentData(50)">最近50期</button>
                 <button class="btn" onclick="loadRecentData(100)">最近100期</button>
                 <button class="btn" onclick="loadRecentData(200)">最近200期</button>
             </div>
@@ -216,39 +211,32 @@
                     <div>邻号</div>
                 </div>
                 
-                <div class="table-body" id="history-data">
-                    <!-- 数据动态加载 -->
-                </div>
+                <div class="table-body" id="history-data"></div>
             </div>
             
-            <!-- 分页控制 -->
             <div class="pagination">
                 <button onclick="changePage(-1)">上一页</button>
-                <span id="pageInfo">第1页</span>
+                <span id="pageInfo">第1页/共1页</span>
                 <button onclick="changePage(1)">下一页</button>
             </div>
         </div>
     </div>
 
 <script>
-// 初始化分页参数
+// 初始化数据
+let currentData = [];
 let currentPage = 1;
 const itemsPerPage = 20;
-let totalItems = 0;
 
-// 加载数据函数
-async function loadRecentData(periods) {
-    const container = document.getElementById('history-data');
-    container.innerHTML = '<div class="loading">数据加载中...</div>';
-    
-    try {
-        // 模拟API请求
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // 生成模拟数据
-        const mockData = Array.from({length: periods}, (_, i) => ({
-            id: `2023${String(i+1).padStart(4, '0')}`,
-            redBalls: Array.from({length:6}, () => Math.floor(Math.random()*33+1)),
+// 生成模拟数据（最新数据在数组前面）
+const generateMockData = () => {
+    const today = new Date();
+    return Array.from({length: 300}, (_, i) => {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        return {
+            id: date.toISOString().slice(0,10).replace(/-/g, '') + String(300 - i).padStart(3, '0'),
+            redBalls: Array.from({length:6}, () => Math.floor(Math.random()*33+1)).sort((a,b) => a - b),
             blue: Math.floor(Math.random()*16+1),
             sum: Math.floor(Math.random()*100+70),
             range: Math.floor(Math.random()*20+10),
@@ -260,15 +248,52 @@ async function loadRecentData(periods) {
             repeat: '1个',
             consecutive: '1组',
             adjacent: '2个'
-        }));
+        }
+    });
+};
 
-        renderHistoryData(mockData);
+// 加载数据
+async function loadRecentData(periods) {
+    currentPage = 1;
+    const container = document.getElementById('history-data');
+    container.innerHTML = '<div class="loading">数据加载中...</div>';
+    
+    try {
+        // 模拟API延迟
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 获取最新N期数据
+        const allData = generateMockData();
+        currentData = allData.slice(0, periods);
+        updatePagination();
+        renderHistoryData(getCurrentPageData());
     } catch (error) {
         container.innerHTML = '<div class="error">数据加载失败</div>';
     }
 }
 
-// 渲染历史数据
+// 获取当前页数据
+function getCurrentPageData() {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return currentData.slice(start, end);
+}
+
+// 更新分页信息
+function updatePagination() {
+    const totalPages = Math.ceil(currentData.length / itemsPerPage);
+    document.getElementById('pageInfo').textContent = `第${currentPage}页/共${totalPages}页`;
+}
+
+// 分页控制
+function changePage(delta) {
+    const totalPages = Math.ceil(currentData.length / itemsPerPage);
+    currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+    updatePagination();
+    renderHistoryData(getCurrentPageData());
+}
+
+// 渲染数据
 function renderHistoryData(data) {
     const container = document.getElementById('history-data');
     container.innerHTML = '';
@@ -297,14 +322,7 @@ function renderHistoryData(data) {
     });
 }
 
-// 分页控制
-function changePage(delta) {
-    currentPage = Math.max(1, currentPage + delta);
-    document.getElementById('pageInfo').textContent = `第${currentPage}页`;
-    loadRecentData(itemsPerPage);
-}
-
-// 初始化加载数据
+// 初始化加载
 loadRecentData(50);
 </script>
 </body>
