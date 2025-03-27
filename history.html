@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双色球历史开奖结果</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .history-table th, .history-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .history-table th {
+            background: #f2f2f2;
+            font-weight: bold;
+        }
+        .ball {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            margin: 0 2px;
+            color: white;
+            font-weight: bold;
+        }
+        .red-ball {
+            background: #e74c3c;
+        }
+        .blue-ball {
+            background: #3498db;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background: #f0f0f0;
+        }
+        .back-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>双色球历史开奖结果</h1>
+            <p>完整历史数据查询</p>
+        </div>
+
+        <div class="filter-panel" style="margin-bottom:20px;text-align:center;">
+            <input type="text" id="search-period" placeholder="输入期号查询" style="padding:8px;width:200px;">
+            <select id="year-filter" style="padding:8px;">
+                <option value="">全部年份</option>
+                <option>2024年</option>
+                <option>2023年</option>
+                <!-- 其他年份... -->
+            </select>
+            <button id="search-btn" style="padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:4px;">搜索</button>
+        </div>
+
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>期号</th>
+                    <th>红球</th>
+                    <th>蓝球</th>
+                    <th>和值</th>
+                    <th>奇偶比</th>
+                    <th>区间比</th>
+                </tr>
+            </thead>
+            <tbody id="history-data">
+                <!-- 数据将通过JS动态加载 -->
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <button id="prev-page">上一页</button>
+            <span id="page-info">1/50</span>
+            <button id="next-page">下一页</button>
+        </div>
+
+        <button class="back-btn" onclick="window.history.back()">返回分析系统</button>
+    </div>
+
+    <script>
+    // 分页控制
+    let currentPage = 1;
+    const rowsPerPage = 20;
+    let allData = [];
+
+    // 加载数据
+    async function loadData() {
+        try {
+            const response = await fetch('data/ssqhistory.csv');
+            const data = await response.text();
+            
+            allData = data.trim().split('\n').map(row => {
+                const [id, r1, r2, r3, r4, r5, r6, blue] = row.split(',');
+                const redBalls = [r1, r2, r3, r4, r5, r6];
+                return {
+                    id,
+                    redBalls,
+                    blue,
+                    sum: redBalls.reduce((a,b) => +a + +b, 0),
+                    oddEven: `${redBalls.filter(n => n%2===1).length}:${redBalls.filter(n => n%2===0).length}`,
+                    zones: `${redBalls.filter(n => n<=11).length}:${redBalls.filter(n => n>11 && n<=22).length}:${redBalls.filter(n => n>22).length}`
+                };
+            }).reverse(); // 按时间倒序
+            
+            renderTable();
+        } catch (error) {
+            console.error('加载失败:', error);
+            document.getElementById('history-data').innerHTML = `
+                <tr>
+                    <td colspan="6" style="color:red;text-align:center;">
+                        数据加载失败，请检查data/ssqhistory.csv文件
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // 渲染表格
+    function renderTable(filteredData = allData) {
+        const start = (currentPage-1) * rowsPerPage;
+        const pageData = filteredData.slice(start, start+rowsPerPage);
+        
+        document.getElementById('history-data').innerHTML = pageData.map(item => `
+            <tr>
+                <td>${item.id}</td>
+                <td>
+                    ${item.redBalls.map(b => `<span class="ball red-ball">${b}</span>`).join('')}
+                </td>
+                <td><span class="ball blue-ball">${item.blue}</span></td>
+                <td>${item.sum}</td>
+                <td>${item.oddEven}</td>
+                <td>${item.zones}</td>
+            </tr>
+        `).join('');
+        
+        document.getElementById('page-info').textContent = 
+            `${currentPage}/${Math.ceil(filteredData.length/rowsPerPage)}`;
+    }
+
+    // 事件监听
+    document.getElementById('search-btn').addEventListener('click', function() {
+        const searchTerm = document.getElementById('search-period').value;
+        const yearFilter = document.getElementById('year-filter').value;
+        
+        const filtered = allData.filter(item => 
+            (item.id.includes(searchTerm)) && 
+            (yearFilter === '' || item.id.startsWith(yearFilter))
+        );
+        
+        currentPage = 1;
+        renderTable(filtered);
+    });
+
+    document.getElementById('prev-page').addEventListener('click', function() {
+        if(currentPage > 1) {
+            currentPage--;
+            renderTable();
+        }
+    });
+
+    document.getElementById('next-page').addEventListener('click', function() {
+        if(currentPage < Math.ceil(allData.length/rowsPerPage)) {
+            currentPage++;
+            renderTable();
+        }
+    });
+
+    // 初始化加载
+    loadData();
+    </script>
+</body>
+</html>
