@@ -59,6 +59,7 @@
         
         .nav-tabs li {
             flex: 1;
+            min-width: 80px;
             text-align: center;
         }
         
@@ -90,6 +91,157 @@
             padding: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        
+        /* 控制面板样式 */
+        .control-panel {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+        
+        .time-range, .display-options {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 6px 12px;
+            margin: 0 5px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn.active {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        
+        .year-select {
+            margin-left: 15px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        select, .period-input {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+        
+        .view-btn {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+            margin-left: 10px;
+        }
+        
+        /* 走势表格样式 */
+        .trend-table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        
+        .table-header, .table-row {
+            display: flex;
+            min-width: 800px;
+        }
+        
+        .table-header {
+            background: #f2f2f2;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .table-row {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .table-row:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .period-col {
+            width: 80px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .ball-col {
+            width: 200px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .blue-col {
+            width: 60px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .stats-col {
+            width: 80px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .red-ball, .blue-ball {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            margin: 2px;
+            border-radius: 50%;
+        }
+        
+        .red-ball {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .blue-ball {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* 右侧统计面板 */
+        .stats-panel {
+            margin-top: 20px;
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        
+        .stats-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #e74c3c;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
@@ -119,8 +271,115 @@
         </div>
         
         <div class="content">
-            <!-- 这里将放置走势图内容 -->
-            <p style="text-align: center; padding: 50px 0;">走势图内容将在这里显示</p>
+            <!-- 参数选择区域 -->
+            <div class="control-panel">
+                <div class="time-range">
+                    <span>显示期数：</span>
+                    <button class="btn active">最近50期</button>
+                    <button class="btn">最近80期</button>
+                    <button class="btn">最近120期</button>
+                    
+                    <span class="year-select">
+                        <select>
+                            <option>选年份</option>
+                            <option>2024年</option>
+                            <option>2023年</option>
+                        </select>
+                        <span>第</span>
+                        <input type="text" class="period-input" value="2024134">
+                        <span>期 至 第</span>
+                        <input type="text" class="period-input">
+                        <span>期</span>
+                        <button class="btn view-btn">查看</button>
+                    </span>
+                </div>
+                
+                <div class="display-options">
+                    <span>标注形式选择：</span>
+                    <select>
+                        <option>不带遗漏数据</option>
+                        <option>重号</option>
+                        <option>连号</option>
+                        <option>边号</option>
+                        <option>带折线</option>
+                        <option>遗漏分层</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 走势图表 -->
+            <div class="trend-table-container">
+                <div class="table-header">
+                    <div class="period-col">期号</div>
+                    <div class="ball-col">红球</div>
+                    <div class="blue-col">蓝球</div>
+                    <div class="stats-col">和值</div>
+                    <div class="stats-col">跨度</div>
+                    <div class="stats-col">区间比</div>
+                    <div class="stats-col">奇偶比</div>
+                </div>
+                
+                <div class="table-body">
+                    <!-- 示例数据行 -->
+                    <div class="table-row">
+                        <div class="period-col">2024134</div>
+                        <div class="ball-col">
+                            <span class="red-ball">04</span>
+                            <span class="red-ball">08</span>
+                            <span class="red-ball">16</span>
+                            <span class="red-ball">18</span>
+                            <span class="red-ball">24</span>
+                            <span class="red-ball">27</span>
+                        </div>
+                        <div class="blue-col"><span class="blue-ball">04</span></div>
+                        <div class="stats-col">97 ↑</div>
+                        <div class="stats-col">23</div>
+                        <div class="stats-col">2:3:1</div>
+                        <div class="stats-col">3:3</div>
+                    </div>
+                    
+                    <!-- 更多示例数据行... -->
+                    <div class="table-row">
+                        <div class="period-col">2024133</div>
+                        <div class="ball-col">
+                            <span class="red-ball">03</span>
+                            <span class="red-ball">11</span>
+                            <span class="red-ball">14</span>
+                            <span class="red-ball">17</span>
+                            <span class="red-ball">21</span>
+                            <span class="red-ball">28</span>
+                        </div>
+                        <div class="blue-col"><span class="blue-ball">07</span></div>
+                        <div class="stats-col">94 ↓</div>
+                        <div class="stats-col">25</div>
+                        <div class="stats-col">1:3:2</div>
+                        <div class="stats-col">2:4</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧统计面板 -->
+            <div class="stats-panel">
+                <div class="stats-title">统计信息</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div>一区(1-11):</div>
+                        <div>出现次数: 12</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>二区(12-22):</div>
+                        <div>出现次数: 18</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>三区(23-33):</div>
+                        <div>出现次数: 10</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>奇偶比例:</div>
+                        <div>奇: 22 偶: 18</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
