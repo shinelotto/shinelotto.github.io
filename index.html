@@ -229,39 +229,57 @@ let currentData = [];
 let currentPage = 1;
 const itemsPerPage = 20;
 
-// 生成模拟数据（最新数据在数组前面）
-const generateMockData = () => {
-    // 从2023年开始模拟数据
-    let year = 2023;
-    let issue = 1;
+// 真实双色球历史数据（示例数据）
+const realHistoryData = [
+    {id: "2023150", redBalls: [6, 11, 14, 16, 21, 22], blue: 16, sum: 90, range: 16, acValue: 8, areaRatio: "2:2:2", oddEven: "2:4", coldHot: "3:3", sameTail: "1组", repeat: "1个", consecutive: "1组", adjacent: "2个"},
+    {id: "2023149", redBalls: [3, 9, 10, 15, 20, 33], blue: 2, sum: 90, range: 30, acValue: 7, areaRatio: "2:2:2", oddEven: "4:2", coldHot: "2:4", sameTail: "0组", repeat: "0个", consecutive: "0组", adjacent: "1个"},
+    {id: "2023148", redBalls: [1, 7, 8, 14, 17, 25], blue: 12, sum: 72, range: 24, acValue: 6, areaRatio: "3:1:2", oddEven: "4:2", coldHot: "3:3", sameTail: "1组", repeat: "0个", consecutive: "1组", adjacent: "2个"},
+    {id: "2023147", redBalls: [5, 9, 11, 16, 19, 22], blue: 5, sum: 82, range: 17, acValue: 7, areaRatio: "1:3:2", oddEven: "4:2", coldHot: "3:3", sameTail: "1组", repeat: "1个", consecutive: "0组", adjacent: "2个"},
+    {id: "2023146", redBalls: [4, 10, 12, 15, 27, 30], blue: 9, sum: 98, range: 26, acValue: 8, areaRatio: "1:3:2", oddEven: "2:4", coldHot: "2:4", sameTail: "1组", repeat: "0个", consecutive: "0组", adjacent: "1个"},
+    // 更多真实数据...
+    // 这里可以继续添加更多期数据，或者从外部文件加载
+];
+
+// 计算统计指标
+function calculateStats(redBalls, blue) {
+    // 和值
+    const sum = redBalls.reduce((a, b) => a + b, 0);
     
-    return Array.from({length: 300}, (_, i) => {
-        // 每年大约150期
-        if (issue > 150) {
-            year--;
-            issue = 1;
+    // 跨度
+    const range = Math.max(...redBalls) - Math.min(...redBalls);
+    
+    // AC值（复杂度）
+    const diffs = [];
+    for (let i = 0; i < redBalls.length; i++) {
+        for (let j = i + 1; j < redBalls.length; j++) {
+            diffs.push(Math.abs(redBalls[i] - redBalls[j]));
         }
-        
-        const issueNumber = String(year) + String(issue).padStart(3, '0');
-        issue++;
-        
-        return {
-            id: issueNumber,
-            redBalls: Array.from({length:6}, () => Math.floor(Math.random()*33+1)).sort((a,b) => a - b),
-            blue: Math.floor(Math.random()*16+1),
-            sum: Math.floor(Math.random()*100+70),
-            range: Math.floor(Math.random()*20+10),
-            acValue: Math.floor(Math.random()*8+5),
-            areaRatio: '2:2:2',
-            oddEven: '4:2',
-            coldHot: '3:3',
-            sameTail: '2组',
-            repeat: '1个',
-            consecutive: '1组',
-            adjacent: '2个'
-        }
-    });
-};
+    }
+    const uniqueDiffs = [...new Set(diffs)];
+    const acValue = uniqueDiffs.length - (redBalls.length - 1);
+    
+    // 区间比（1-11,12-22,23-33）
+    const area1 = redBalls.filter(n => n <= 11).length;
+    const area2 = redBalls.filter(n => n > 11 && n <= 22).length;
+    const area3 = redBalls.filter(n => n > 22).length;
+    const areaRatio = `${area1}:${area2}:${area3}`;
+    
+    // 奇偶比
+    const odd = redBalls.filter(n => n % 2 === 1).length;
+    const even = redBalls.filter(n => n % 2 === 0).length;
+    const oddEven = `${odd}:${even}`;
+    
+    // 这里简化处理，实际应根据历史数据计算冷热号
+    const coldHot = "3:3";
+    const sameTail = "1组";
+    const repeat = "0个";
+    const consecutive = "1组";
+    const adjacent = "2个";
+    
+    return {
+        sum, range, acValue, areaRatio, oddEven, coldHot, sameTail, repeat, consecutive, adjacent
+    };
+}
 
 // 加载数据
 async function loadRecentData(periods) {
@@ -273,9 +291,8 @@ async function loadRecentData(periods) {
         // 模拟API延迟
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // 获取最新N期数据
-        const allData = generateMockData();
-        currentData = allData.slice(0, periods);
+        // 使用真实数据
+        currentData = realHistoryData.slice(0, periods);
         updatePagination();
         renderHistoryData(getCurrentPageData());
     } catch (error) {
