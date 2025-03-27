@@ -1,90 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <title>双色球历史数据</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
-    header { background: #f0f0f0; padding: 10px; text-align: center; }
-    .red-ball { color: red; font-weight: bold; }
-    .blue-ball { color: blue; font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 8px; text-align: center; border: 1px solid #ddd; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双色球走势分析系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 标题样式 */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        /* 导航栏样式 */
+        .nav-container {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .nav-tabs li {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .nav-tabs a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .nav-tabs a:hover {
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+        }
+        
+        .nav-tabs a.active {
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+            background-color: #f9f9f9;
+        }
+        
+        /* 内容区域样式 */
+        .content {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
-  <header>双色球数据分析</header>
-  <main>
-    <h2>双色球历史开奖记录</h2>
-    <div class="lottery-table">
-      <table>
-        <thead>
-          <tr>
-            <th>期号</th>
-            <th>红球1</th>
-            <th>红球2</th>
-            <th>红球3</th>
-            <th>红球4</th>
-            <th>红球5</th>
-            <th>红球6</th>
-            <th>蓝球</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div class="container">
+        <div class="header">
+            <h1>双色球走势分析系统</h1>
+            <p>专业数据分析，助您把握彩票走势</p>
+        </div>
+        
+        <div class="nav-container">
+            <ul class="nav-tabs">
+                <li><a href="#" class="active">基本走势</a></li>
+                <li><a href="#">红球大小</a></li>
+                <li><a href="#">红球奇偶</a></li>
+                <li><a href="#">红球质合</a></li>
+                <li><a href="#">红球012路</a></li>
+                <li><a href="#">和值走势</a></li>
+                <li><a href="#">AC值走势</a></li>
+                <li><a href="#">连号走势</a></li>
+                <li><a href="#">重号走势</a></li>
+                <li><a href="#">红球走势</a></li>
+                <li><a href="#">蓝球走势</a></li>
+                <li><a href="#">区间走势</a></li>
+                <li><a href="#">跨度走势</a></li>
+                <li><a href="#">尾数分布</a></li>
+            </ul>
+        </div>
+        
+        <div class="content">
+            <!-- 这里将放置走势图内容 -->
+            <p style="text-align: center; padding: 50px 0;">走势图内容将在这里显示</p>
+        </div>
     </div>
-  </main>
-
-  <script>
-    // 强制两位数显示函数（处理空值和字符串转换）
-    const formatBall = num => {
-      num = String(num || '').trim();
-      return num.length === 1 ? '0' + num : num;
-    };
-
-    // 加载CSV数据
-    fetch('data/ssqhistory.csv')
-      .then(response => {
-        if (!response.ok) throw new Error('网络响应异常');
-        return response.text();
-      })
-      .then(data => {
-        const rows = data.split('\n').filter(row => row.trim() !== '');
-        const tbody = document.querySelector('tbody');
-        
-        // 跳过表头
-        const startRow = rows[0].includes('期号') ? 1 : 0;
-        
-        for(let i = startRow; i < rows.length; i++) {
-          const cells = rows[i].split(',');
-          if (cells.length < 8) continue; // 确保数据完整
-          
-          const [id, red1, red2, red3, red4, red5, red6, blue] = cells;
-          const tr = document.createElement('tr');
-          
-          tr.innerHTML = `
-            <td>${id}</td>
-            <td class="red-ball">${formatBall(red1)}</td>
-            <td class="red-ball">${formatBall(red2)}</td>
-            <td class="red-ball">${formatBall(red3)}</td>
-            <td class="red-ball">${formatBall(red4)}</td>
-            <td class="red-ball">${formatBall(red5)}</td>
-            <td class="red-ball">${formatBall(red6)}</td>
-            <td class="blue-ball">${formatBall(blue)}</td>
-          `;
-          
-          tbody.appendChild(tr);
-        }
-      })
-      .catch(error => {
-        console.error('加载失败:', error);
-        document.querySelector('tbody').innerHTML = `
-          <tr><td colspan="8" style="color:red;text-align:center;">
-            数据加载失败，请检查控制台或刷新页面
-          </td></tr>
-        `;
-      });
-  </script>
 </body>
 </html>
