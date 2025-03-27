@@ -316,6 +316,54 @@
             background: #ddd;
             margin: 10px 0;
         }
+        
+        /* 新增历史开奖结果样式 */
+        #history-results {
+            display: none;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            background: white;
+        }
+        
+        #history-results table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        #history-results th, 
+        #history-results td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        #history-results th {
+            background: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .history-ball {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            margin: 0 2px;
+            border-radius: 50%;
+            color: white;
+        }
+        
+        .history-red {
+            background: #e74c3c;
+        }
+        
+        .history-blue {
+            background: #3498db;
+        }
     </style>
 </head>
 <body>
@@ -496,11 +544,27 @@
                     <button class="tool-btn">随机选号工具</button>
                     <button class="tool-btn">号码跟随分析工具</button>
                     <button class="tool-btn">金额计算器</button>
-                    <button class="tool-btn">历史开奖结果</button>
+                    <button class="tool-btn" id="history-btn">历史开奖结果</button>
                     <button class="tool-btn">号码分析工具</button>
                     <button class="tool-btn">胆拖组号</button>
                     <button class="tool-btn">历史同期查询</button>
                     <button class="tool-btn">龙头凤尾查询</button>
+                </div>
+                
+                <!-- 新增历史开奖结果展示区域 -->
+                <div id="history-results">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>期号</th>
+                                <th>红球</th>
+                                <th>蓝球</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-data">
+                            <!-- 数据将通过JS动态加载 -->
+                        </tbody>
+                    </table>
                 </div>
                 
                 <div class="tool-item">
@@ -517,5 +581,73 @@
             </div>
         </div>
     </div>
+
+    <script>
+    // 历史开奖结果功能
+    document.getElementById('history-btn').addEventListener('click', function() {
+        const resultsDiv = document.getElementById('history-results');
+        
+        // 切换显示/隐藏
+        if(resultsDiv.style.display === 'none' || !resultsDiv.style.display) {
+            // 首次点击时加载数据
+            if(!resultsDiv.dataset.loaded) {
+                loadHistoryData();
+                resultsDiv.dataset.loaded = 'true';
+            }
+            resultsDiv.style.display = 'block';
+        } else {
+            resultsDiv.style.display = 'none';
+        }
+    });
+
+    // 加载历史数据函数
+    function loadHistoryData() {
+        fetch('data/ssqhistory.csv')
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                return response.text();
+            })
+            .then(data => {
+                const tbody = document.getElementById('history-data');
+                tbody.innerHTML = '';
+                
+                // 解析CSV数据
+                const rows = data.trim().split('\n');
+                rows.forEach(row => {
+                    const [id, r1, r2, r3, r4, r5, r6, blue] = row.split(',');
+                    
+                    // 创建表格行
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${id}</td>
+                        <td>
+                            <span class="history-ball history-red">${r1}</span>
+                            <span class="history-ball history-red">${r2}</span>
+                            <span class="history-ball history-red">${r3}</span>
+                            <span class="history-ball history-red">${r4}</span>
+                            <span class="history-ball history-red">${r5}</span>
+                            <span class="history-ball history-red">${r6}</span>
+                        </td>
+                        <td>
+                            <span class="history-ball history-blue">${blue}</span>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('加载数据失败:', error);
+                document.getElementById('history-data').innerHTML = `
+                    <tr>
+                        <td colspan="3" style="color:red; text-align:center;">
+                            数据加载失败，请检查data/ssqhistory.csv文件是否存在
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+    </script>
 </body>
 </html>
