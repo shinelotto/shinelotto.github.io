@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>双色球智能分析系统</title>
+    <title>双色球统计分析系统</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
+            font-family: 'Microsoft YaHei', sans-serif;
         }
         
         body {
@@ -19,339 +19,827 @@
         }
         
         .container {
-            width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
         
-        .header {
-            text-align: center;
+        header {
+            background-color: #e60012;
+            color: white;
             padding: 20px 0;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .recommend-section {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .stats-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #eee;
-        }
-
-        .trend-table-container {
-            overflow-x: auto;
-            margin: 15px 0;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .table-header, 
-        .table-row {
-            display: grid;
-            min-width: 1500px;
-            grid-template-columns: 
-                100px    
-                220px    
-                80px     
-                80px     
-                80px     
-                100px    
-                100px    
-                100px    
-                80px     
-                80px     
-                80px     
-                80px;    
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .table-header {
-            background: #f8f9fa;
-            font-weight: bold;
-        }
-
-        .red-ball, .blue-ball {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
             text-align: center;
-            border-radius: 50%;
-            font-size: 14px;
-            margin: 0 2px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .red-ball {
-            background: #e74c3c;
-            color: white;
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
         }
-
-        .blue-ball {
-            background: #3498db;
-            color: white;
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
         }
-
-        .pagination {
-            margin-top: 20px;
+        
+        .section {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            color: #e60012;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .recommendation {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .recommend-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px;
+            width: calc(33% - 20px);
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        .recommend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #e60012;
+        }
+        
+        .ball-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
         }
-
+        
+        .ball {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 5px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .red-ball {
+            background-color: #e60012;
+        }
+        
+        .blue-ball {
+            background-color: #1e50a2;
+        }
+        
+        .stats-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+        
+        .search-box button {
+            padding: 10px 20px;
+            background-color: #e60012;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .search-box button:hover {
+            background-color: #c5000f;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
         .pagination button {
-            padding: 8px 20px;
+            padding: 8px 16px;
+            margin: 0 5px;
+            background-color: #f2f2f2;
             border: 1px solid #ddd;
             border-radius: 4px;
-            background: white;
             cursor: pointer;
-            transition: all 0.3s;
         }
-
-        .pagination button:hover {
-            background: #f8f9fa;
-            border-color: #c0392b;
+        
+        .pagination button.active {
+            background-color: #e60012;
+            color: white;
+            border-color: #e60012;
         }
-
-        .loading, .error {
-            padding: 20px;
+        
+        .pagination button:hover:not(.active) {
+            background-color: #ddd;
+        }
+        
+        .loading {
             text-align: center;
+            padding: 20px;
+            font-style: italic;
             color: #666;
         }
-
-        .error {
-            color: #c0392b;
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
         }
-
+        
         @media (max-width: 768px) {
-            .table-header, 
-            .table-row {
-                padding: 8px 10px;
-                font-size: 0.9em;
+            .recommend-box {
+                width: 100%;
             }
-            .red-ball, .blue-ball {
-                width: 25px;
-                height: 25px;
-                line-height: 25px;
-                font-size: 12px;
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>双色球智能分析系统</h1>
-            <p>基于机器学习的智能号码推荐</p>
-        </div>
-
-        <div class="recommend-section">
-            <h3>本期智能推荐</h3>
-            <div class="recommend-balls">
-                <span class="red-ball">08</span>
-                <span class="red-ball">15</span>
-                <span class="red-ball">22</span>
-                <span class="red-ball">27</span>
-                <span class="red-ball">31</span>
-                <span class="red-ball">33</span>
-                <span class="blue-ball">09</span>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stats-card">
-                    <div>推荐理由：</div>
-                    <div>热号组合（近5期高频）+ 冷号反弹（33遗漏15期）</div>
-                </div>
-                <div class="stats-card">
-                    <div>历史相似组合中奖率：</div>
-                    <div style="color:#e74c3c;font-weight:bold">23.7%</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="recommend-section">
-            <h3>历史开奖数据分析</h3>
-            <div class="control-panel">
-                <button class="btn" onclick="loadRecentData(50)">最近50期</button>
-                <button class="btn" onclick="loadRecentData(100)">最近100期</button>
-                <button class="btn" onclick="loadRecentData(200)">最近200期</button>
-            </div>
-            
-            <div class="trend-table-container">
-                <div class="table-header">
-                    <div>期号</div>
-                    <div>开奖号码</div>
-                    <div>和值</div>
-                    <div>跨度</div>
-                    <div>AC值</div>
-                    <div>区间比</div>
-                    <div>奇偶比</div>
-                    <div>冷热比</div>
-                    <div>同尾</div>
-                    <div>重号</div>
-                    <div>连号</div>
-                    <div>邻号</div>
+        <header>
+            <h1>双色球统计分析系统</h1>
+            <div class="subtitle">基于历史数据的智能分析与推荐</div>
+        </header>
+        
+        <section class="section">
+            <h2 class="section-title">智能推荐</h2>
+            <div class="recommendation">
+                <div class="recommend-box">
+                    <div class="recommend-title">热门号码组合</div>
+                    <div class="ball-container" id="hotNumbers">
+                        <div class="loading">正在计算...</div>
+                    </div>
+                    <div>基于历史高频号码组合</div>
                 </div>
                 
-                <div class="table-body" id="history-data"></div>
+                <div class="recommend-box">
+                    <div class="recommend-title">冷门号码组合</div>
+                    <div class="ball-container" id="coldNumbers">
+                        <div class="loading">正在计算...</div>
+                    </div>
+                    <div>基于长期未出现号码</div>
+                </div>
+                
+                <div class="recommend-box">
+                    <div class="recommend-title">AI预测组合</div>
+                    <div class="ball-container" id="aiNumbers">
+                        <div class="loading">正在计算...</div>
+                    </div>
+                    <div>基于机器学习算法预测</div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section">
+            <h2 class="section-title">历史开奖数据分析</h2>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="输入期号进行搜索...">
+                <button id="searchButton">搜索</button>
             </div>
             
-            <div class="pagination">
-                <button onclick="changePage(-1)">上一页</button>
-                <span id="pageInfo">第1页/共1页</span>
-                <button onclick="changePage(1)">下一页</button>
+            <div class="stats-container">
+                <div class="loading" id="loadingIndicator">正在加载数据...</div>
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>期号</th>
+                            <th>开奖号码</th>
+                            <th>和值</th>
+                            <th>跨度</th>
+                            <th>AC值</th>
+                            <th>区间比</th>
+                            <th>奇偶比</th>
+                            <th>冷热比</th>
+                            <th>同尾</th>
+                            <th>重号</th>
+                            <th>连号</th>
+                            <th>邻号</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyData">
+                        <!-- 数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+                
+                <div class="pagination" id="pagination">
+                    <!-- 分页按钮将通过JavaScript动态生成 -->
+                </div>
             </div>
-        </div>
+        </section>
     </div>
-
-<script>
-// 初始化数据
-let currentData = [];
-let currentPage = 1;
-const itemsPerPage = 20;
-
-// 真实双色球历史数据（示例数据）
-const realHistoryData = [
-    {id: "2023150", redBalls: [6, 11, 14, 16, 21, 22], blue: 16, sum: 90, range: 16, acValue: 8, areaRatio: "2:2:2", oddEven: "2:4", coldHot: "3:3", sameTail: "1组", repeat: "1个", consecutive: "1组", adjacent: "2个"},
-    {id: "2023149", redBalls: [3, 9, 10, 15, 20, 33], blue: 2, sum: 90, range: 30, acValue: 7, areaRatio: "2:2:2", oddEven: "4:2", coldHot: "2:4", sameTail: "0组", repeat: "0个", consecutive: "0组", adjacent: "1个"},
-    {id: "2023148", redBalls: [1, 7, 8, 14, 17, 25], blue: 12, sum: 72, range: 24, acValue: 6, areaRatio: "3:1:2", oddEven: "4:2", coldHot: "3:3", sameTail: "1组", repeat: "0个", consecutive: "1组", adjacent: "2个"},
-    {id: "2023147", redBalls: [5, 9, 11, 16, 19, 22], blue: 5, sum: 82, range: 17, acValue: 7, areaRatio: "1:3:2", oddEven: "4:2", coldHot: "3:3", sameTail: "1组", repeat: "1个", consecutive: "0组", adjacent: "2个"},
-    {id: "2023146", redBalls: [4, 10, 12, 15, 27, 30], blue: 9, sum: 98, range: 26, acValue: 8, areaRatio: "1:3:2", oddEven: "2:4", coldHot: "2:4", sameTail: "1组", repeat: "0个", consecutive: "0组", adjacent: "1个"},
-    // 更多真实数据...
-    // 这里可以继续添加更多期数据，或者从外部文件加载
-];
-
-// 计算统计指标
-function calculateStats(redBalls, blue) {
-    // 和值
-    const sum = redBalls.reduce((a, b) => a + b, 0);
     
-    // 跨度
-    const range = Math.max(...redBalls) - Math.min(...redBalls);
-    
-    // AC值（复杂度）
-    const diffs = [];
-    for (let i = 0; i < redBalls.length; i++) {
-        for (let j = i + 1; j < redBalls.length; j++) {
-            diffs.push(Math.abs(redBalls[i] - redBalls[j]));
+    <footer>
+        <p>© 2023 双色球统计分析系统 | 数据仅供参考，不构成投资建议</p>
+    </footer>
+
+    <script>
+        // 当前页数据
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let allData = [];
+        let filteredData = [];
+
+        // DOM元素
+        const historyDataEl = document.getElementById('historyData');
+        const paginationEl = document.getElementById('pagination');
+        const searchInputEl = document.getElementById('searchInput');
+        const searchButtonEl = document.getElementById('searchButton');
+        const loadingIndicatorEl = document.getElementById('loadingIndicator');
+        const hotNumbersEl = document.getElementById('hotNumbers');
+        const coldNumbersEl = document.getElementById('coldNumbers');
+        const aiNumbersEl = document.getElementById('aiNumbers');
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromCSV();
+        });
+
+        // 搜索功能
+        searchButtonEl.addEventListener('click', function() {
+            const searchTerm = searchInputEl.value.trim();
+            
+            if (searchTerm === '') {
+                filteredData = [...allData];
+            } else {
+                filteredData = allData.filter(item => 
+                    item.issue.includes(searchTerm)
+                );
+            }
+            
+            currentPage = 1;
+            renderTable();
+            renderPagination();
+        });
+
+        // 渲染表格数据
+        function renderTable() {
+            historyDataEl.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = filteredData.slice(startIndex, endIndex);
+            
+            if (paginatedData.length === 0) {
+                historyDataEl.innerHTML = '<tr><td colspan="12" style="text-align:center;">没有找到匹配的数据</td></tr>';
+                return;
+            }
+            
+            paginatedData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // 期号
+                const issueCell = document.createElement('td');
+                issueCell.textContent = item.issue;
+                row.appendChild(issueCell);
+                
+                // 开奖号码
+                const numbersCell = document.createElement('td');
+                const ballContainer = document.createElement('div');
+                ballContainer.className = 'ball-container';
+                
+                item.redBalls.forEach(ball => {
+                    const redBall = document.createElement('div');
+                    redBall.className = 'ball red-ball';
+                    redBall.textContent = ball;
+                    ballContainer.appendChild(redBall);
+                });
+                
+                const blueBall = document.createElement('div');
+                blueBall.className = 'ball blue-ball';
+                blueBall.textContent = item.blueBall;
+                ballContainer.appendChild(blueBall);
+                
+                numbersCell.appendChild(ballContainer);
+                row.appendChild(numbersCell);
+                
+                // 其他统计指标
+                const sumCell = document.createElement('td');
+                sumCell.textContent = item.sum;
+                row.appendChild(sumCell);
+                
+                const spanCell = document.createElement('td');
+                spanCell.textContent = item.span;
+                row.appendChild(spanCell);
+                
+                const acValueCell = document.createElement('td');
+                acValueCell.textContent = item.acValue;
+                row.appendChild(acValueCell);
+                
+                const zoneRatioCell = document.createElement('td');
+                zoneRatioCell.textContent = item.zoneRatio;
+                row.appendChild(zoneRatioCell);
+                
+                const oddEvenRatioCell = document.createElement('td');
+                oddEvenRatioCell.textContent = item.oddEvenRatio;
+                row.appendChild(oddEvenRatioCell);
+                
+                const hotColdRatioCell = document.createElement('td');
+                hotColdRatioCell.textContent = item.hotColdRatio;
+                row.appendChild(hotColdRatioCell);
+                
+                const sameTailCell = document.createElement('td');
+                sameTailCell.textContent = item.sameTail;
+                row.appendChild(sameTailCell);
+                
+                const repeatNumbersCell = document.createElement('td');
+                repeatNumbersCell.textContent = item.repeatNumbers;
+                row.appendChild(repeatNumbersCell);
+                
+                const consecutiveNumbersCell = document.createElement('td');
+                consecutiveNumbersCell.textContent = item.consecutiveNumbers;
+                row.appendChild(consecutiveNumbersCell);
+                
+                const adjacentNumbersCell = document.createElement('td');
+                adjacentNumbersCell.textContent = item.adjacentNumbers;
+                row.appendChild(adjacentNumbersCell);
+                
+                historyDataEl.appendChild(row);
+            });
         }
-    }
-    const uniqueDiffs = [...new Set(diffs)];
-    const acValue = uniqueDiffs.length - (redBalls.length - 1);
-    
-    // 区间比（1-11,12-22,23-33）
-    const area1 = redBalls.filter(n => n <= 11).length;
-    const area2 = redBalls.filter(n => n > 11 && n <= 22).length;
-    const area3 = redBalls.filter(n => n > 22).length;
-    const areaRatio = `${area1}:${area2}:${area3}`;
-    
-    // 奇偶比
-    const odd = redBalls.filter(n => n % 2 === 1).length;
-    const even = redBalls.filter(n => n % 2 === 0).length;
-    const oddEven = `${odd}:${even}`;
-    
-    // 这里简化处理，实际应根据历史数据计算冷热号
-    const coldHot = "3:3";
-    const sameTail = "1组";
-    const repeat = "0个";
-    const consecutive = "1组";
-    const adjacent = "2个";
-    
-    return {
-        sum, range, acValue, areaRatio, oddEven, coldHot, sameTail, repeat, consecutive, adjacent
-    };
-}
 
-// 加载数据
-async function loadRecentData(periods) {
-    currentPage = 1;
-    const container = document.getElementById('history-data');
-    container.innerHTML = '<div class="loading">数据加载中...</div>';
-    
-    try {
-        // 模拟API延迟
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // 使用真实数据
-        currentData = realHistoryData.slice(0, periods);
-        updatePagination();
-        renderHistoryData(getCurrentPageData());
-    } catch (error) {
-        container.innerHTML = '<div class="error">数据加载失败</div>';
-    }
-}
+        // 渲染分页
+        function renderPagination() {
+            paginationEl.innerHTML = '';
+            
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            if (totalPages <= 1) return;
+            
+            // 上一页按钮
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '上一页';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                    renderPagination();
+                }
+            });
+            paginationEl.appendChild(prevButton);
+            
+            // 页码按钮
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstPageButton = document.createElement('button');
+                firstPageButton.textContent = '1';
+                firstPageButton.addEventListener('click', () => {
+                    currentPage = 1;
+                    renderTable();
+                    renderPagination();
+                });
+                paginationEl.appendChild(firstPageButton);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    paginationEl.appendChild(ellipsis);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.className = 'active';
+                }
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderTable();
+                    renderPagination();
+                });
+                paginationEl.appendChild(pageButton);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    paginationEl.appendChild(ellipsis);
+                }
+                
+                const lastPageButton = document.createElement('button');
+                lastPageButton.textContent = totalPages;
+                lastPageButton.addEventListener('click', () => {
+                    currentPage = totalPages;
+                    renderTable();
+                    renderPagination();
+                });
+                paginationEl.appendChild(lastPageButton);
+            }
+            
+            // 下一页按钮
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '下一页';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                    renderPagination();
+                }
+            });
+            paginationEl.appendChild(nextButton);
+        }
 
-// 获取当前页数据
-function getCurrentPageData() {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return currentData.slice(start, end);
-}
+        // 从CSV文件加载数据
+        function loadDataFromCSV() {
+            // 注意：由于浏览器安全限制，直接访问本地文件系统可能会有问题
+            // 在生产环境中，你应该将CSV文件放在服务器上并通过HTTP请求获取
+            
+            // 这里我们假设CSV文件可以通过相对路径访问
+            // 如果是在本地测试，你可能需要使用本地服务器（如Live Server）
+            fetch('data/ssqhistory.csv')
+                .then(response => response.text())
+                .then(csvData => {
+                    // 解析CSV数据
+                    const parsedData = parseCSV(csvData);
+                    
+                    // 更新数据
+                    allData = parsedData;
+                    filteredData = [...allData];
+                    
+                    // 重新渲染表格和分页
+                    currentPage = 1;
+                    renderTable();
+                    renderPagination();
+                    
+                    // 计算并显示推荐号码
+                    calculateRecommendations();
+                    
+                    // 隐藏加载指示器
+                    loadingIndicatorEl.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('加载数据失败:', error);
+                    loadingIndicatorEl.textContent = '加载数据失败，请刷新重试';
+                    
+                    // 如果fetch失败，尝试使用绝对路径（仅适用于本地文件协议）
+                    if (window.location.protocol === 'file:') {
+                        try {
+                            // 使用XMLHttpRequest作为备选方案
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('GET', 'file:///E:/my-lottery-site/data/ssqhistory.csv', true);
+                            xhr.onreadystatechange = function() {
+                                if (xhr.readyState === 4) {
+                                    if (xhr.status === 0) { // 本地文件可能返回状态0
+                                        const parsedData = parseCSV(xhr.responseText);
+                                        allData = parsedData;
+                                        filteredData = [...allData];
+                                        currentPage = 1;
+                                        renderTable();
+                                        renderPagination();
+                                        calculateRecommendations();
+                                        loadingIndicatorEl.style.display = 'none';
+                                    } else {
+                                        loadingIndicatorEl.textContent = '加载数据失败，请使用本地服务器运行';
+                                    }
+                                }
+                            };
+                            xhr.send();
+                        } catch (e) {
+                            console.error('备选加载方案失败:', e);
+                            loadingIndicatorEl.textContent = '无法加载数据，请使用HTTP服务器运行';
+                        }
+                    }
+                });
+        }
 
-// 更新分页信息
-function updatePagination() {
-    const totalPages = Math.ceil(currentData.length / itemsPerPage);
-    document.getElementById('pageInfo').textContent = `第${currentPage}页/共${totalPages}页`;
-}
+        // 解析CSV数据
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const result = [];
+            
+            // 假设CSV格式为：期号,红球1,红球2,红球3,红球4,红球5,红球6,蓝球
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === '') continue;
+                
+                const values = line.split(',');
+                if (values.length < 8) continue; // 确保有足够的数据列
+                
+                const issue = values[0].trim();
+                const redBalls = [
+                    values[1].trim().padStart(2, '0'),
+                    values[2].trim().padStart(2, '0'),
+                    values[3].trim().padStart(2, '0'),
+                    values[4].trim().padStart(2, '0'),
+                    values[5].trim().padStart(2, '0'),
+                    values[6].trim().padStart(2, '0')
+                ];
+                const blueBall = values[7].trim().padStart(2, '0');
+                
+                // 计算统计指标
+                const sum = calculateSum(redBalls);
+                const span = calculateSpan(redBalls);
+                const acValue = calculateACValue(redBalls);
+                const zoneRatio = calculateZoneRatio(redBalls);
+                const oddEvenRatio = calculateOddEvenRatio(redBalls);
+                const hotColdRatio = calculateHotColdRatio(redBalls, allData.slice(0, i));
+                const sameTail = calculateSameTail(redBalls);
+                const repeatNumbers = calculateRepeatNumbers(redBalls, i > 0 ? allData[i-1].redBalls : []);
+                const consecutiveNumbers = calculateConsecutiveNumbers(redBalls);
+                const adjacentNumbers = calculateAdjacentNumbers(redBalls, i > 0 ? allData[i-1].redBalls : []);
+                
+                result.push({
+                    issue,
+                    redBalls,
+                    blueBall,
+                    sum,
+                    span,
+                    acValue,
+                    zoneRatio,
+                    oddEvenRatio,
+                    hotColdRatio,
+                    sameTail,
+                    repeatNumbers,
+                    consecutiveNumbers,
+                    adjacentNumbers
+                });
+            }
+            
+            return result.reverse(); // 反转数组使最新数据在前
+        }
 
-// 分页控制
-function changePage(delta) {
-    const totalPages = Math.ceil(currentData.length / itemsPerPage);
-    currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
-    updatePagination();
-    renderHistoryData(getCurrentPageData());
-}
+        // 计算和值
+        function calculateSum(redBalls) {
+            return redBalls.reduce((sum, ball) => sum + parseInt(ball), 0);
+        }
 
-// 渲染数据
-function renderHistoryData(data) {
-    const container = document.getElementById('history-data');
-    container.innerHTML = '';
-    
-    data.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'table-row';
-        row.innerHTML = `
-            <div>${item.id}</div>
-            <div>
-                ${item.redBalls.map(n => `<span class="red-ball">${n}</span>`).join('')}
-                <span class="blue-ball">${item.blue}</span>
-            </div>
-            <div>${item.sum}</div>
-            <div>${item.range}</div>
-            <div>${item.acValue}</div>
-            <div>${item.areaRatio}</div>
-            <div>${item.oddEven}</div>
-            <div>${item.coldHot}</div>
-            <div>${item.sameTail}</div>
-            <div>${item.repeat}</div>
-            <div>${item.consecutive}</div>
-            <div>${item.adjacent}</div>
-        `;
-        container.appendChild(row);
-    });
-}
+        // 计算跨度
+        function calculateSpan(redBalls) {
+            const nums = redBalls.map(ball => parseInt(ball)).sort((a, b) => a - b);
+            return nums[nums.length - 1] - nums[0];
+        }
 
-// 初始化加载
-loadRecentData(50);
-</script>
+        // 计算AC值
+        function calculateACValue(redBalls) {
+            const nums = redBalls.map(ball => parseInt(ball)).sort((a, b) => a - b);
+            const diffs = [];
+            
+            for (let i = 0; i < nums.length; i++) {
+                for (let j = i + 1; j < nums.length; j++) {
+                    const diff = nums[j] - nums[i];
+                    if (diffs.indexOf(diff) === -1) {
+                        diffs.push(diff);
+                    }
+                }
+            }
+            
+            return diffs.length - (nums.length - 1);
+        }
+
+        // 计算区间比
+        function calculateZoneRatio(redBalls) {
+            const nums = redBalls.map(ball => parseInt(ball));
+            let zone1 = 0, zone2 = 0, zone3 = 0;
+            
+            nums.forEach(num => {
+                if (num <= 11) zone1++;
+                else if (num <= 22) zone2++;
+                else zone3++;
+            });
+            
+            return `${zone1}:${zone2}:${zone3}`;
+        }
+
+        // 计算奇偶比
+        function calculateOddEvenRatio(redBalls) {
+            const nums = redBalls.map(ball => parseInt(ball));
+            let odd = 0, even = 0;
+            
+            nums.forEach(num => {
+                if (num % 2 === 1) odd++;
+                else even++;
+            });
+            
+            return `${odd}:${even}`;
+        }
+
+        // 计算冷热比（简化版）
+        function calculateHotColdRatio(redBalls, previousData) {
+            if (previousData.length < 10) return "N/A";
+            
+            const hotThreshold = previousData.length * 0.3; // 前30%为热号
+            const hotNumbers = getHotNumbers(previousData, hotThreshold);
+            
+            let hot = 0, cold = 0;
+            redBalls.forEach(ball => {
+                if (hotNumbers.includes(ball)) hot++;
+                else cold++;
+            });
+            
+            return `${hot}:${cold}`;
+        }
+
+        // 计算同尾号数量
+        function calculateSameTail(redBalls) {
+            const tails = redBalls.map(ball => ball.slice(-1));
+            const uniqueTails = [...new Set(tails)];
+            return redBalls.length - uniqueTails.length;
+        }
+
+        // 计算重号数量
+        function calculateRepeatNumbers(redBalls, prevRedBalls) {
+            if (prevRedBalls.length === 0) return 0;
+            return redBalls.filter(ball => prevRedBalls.includes(ball)).length;
+        }
+
+        // 计算连号数量
+        function calculateConsecutiveNumbers(redBalls) {
+            const nums = redBalls.map(ball => parseInt(ball)).sort((a, b) => a - b);
+            let consecutive = 0;
+            
+            for (let i = 1; i < nums.length; i++) {
+                if (nums[i] === nums[i-1] + 1) {
+                    consecutive++;
+                }
+            }
+            
+            return consecutive;
+        }
+
+        // 计算邻号数量
+        function calculateAdjacentNumbers(redBalls, prevRedBalls) {
+            if (prevRedBalls.length === 0) return 0;
+            
+            const prevNums = prevRedBalls.map(ball => parseInt(ball));
+            const currentNums = redBalls.map(ball => parseInt(ball));
+            let adjacent = 0;
+            
+            currentNums.forEach(num => {
+                if (prevNums.includes(num - 1) || prevNums.includes(num + 1)) {
+                    adjacent++;
+                }
+            });
+            
+            return adjacent;
+        }
+
+        // 获取热门号码
+        function getHotNumbers(data, count) {
+            const frequency = {};
+            
+            // 统计每个红球出现的频率
+            data.forEach(item => {
+                item.redBalls.forEach(ball => {
+                    frequency[ball] = (frequency[ball] || 0) + 1;
+                });
+            });
+            
+            // 按频率排序
+            const sorted = Object.entries(frequency).sort((a, b) => b[1] - a[1]);
+            
+            // 返回前count个热门号码
+            return sorted.slice(0, count).map(item => item[0]);
+        }
+
+        // 获取冷门号码
+        function getColdNumbers(data, count) {
+            const frequency = {};
+            const allRedBalls = Array.from({length: 33}, (_, i) => (i+1).toString().padStart(2, '0'));
+            
+            // 初始化所有号码
+            allRedBalls.forEach(ball => {
+                frequency[ball] = 0;
+            });
+            
+            // 统计每个红球出现的频率
+            data.forEach(item => {
+                item.redBalls.forEach(ball => {
+                    frequency[ball]++;
+                });
+            });
+            
+            // 按频率排序（升序）
+            const sorted = Object.entries(frequency).sort((a, b) => a[1] - b[1]);
+            
+            // 返回前count个冷门号码
+            return sorted.slice(0, count).map(item => item[0]);
+        }
+
+        // 计算并显示推荐号码
+        function calculateRecommendations() {
+            if (allData.length === 0) return;
+            
+            // 热门号码推荐（出现频率最高的6红+1蓝）
+            const hotRedBalls = getHotNumbers(allData, 6);
+            const hotBlueBalls = getHotNumbers(allData.map(item => ({redBalls: [item.blueBall]})), 1);
+            renderBalls(hotNumbersEl, hotRedBalls, hotBlueBalls[0]);
+            
+            // 冷门号码推荐（出现频率最低的6红+1蓝）
+            const coldRedBalls = getColdNumbers(allData, 6);
+            const coldBlueBalls = getColdNumbers(allData.map(item => ({redBalls: [item.blueBall]})), 1);
+            renderBalls(coldNumbersEl, coldRedBalls, coldBlueBalls[0]);
+            
+            // AI预测号码（随机算法，实际应用中应该使用更复杂的算法）
+            const aiRedBalls = generateRandomRedBalls();
+            const aiBlueBall = generateRandomBlueBall();
+            renderBalls(aiNumbersEl, aiRedBalls, aiBlueBall);
+        }
+
+        // 渲染球号
+        function renderBalls(container, redBalls, blueBall) {
+            container.innerHTML = '';
+            
+            redBalls.forEach(ball => {
+                const redBall = document.createElement('div');
+                redBall.className = 'ball red-ball';
+                redBall.textContent = ball;
+                container.appendChild(redBall);
+            });
+            
+            const blueBallEl = document.createElement('div');
+            blueBallEl.className = 'ball blue-ball';
+            blueBallEl.textContent = blueBall;
+            container.appendChild(blueBallEl);
+        }
+
+        // 生成随机红球（模拟AI预测）
+        function generateRandomRedBalls() {
+            const balls = [];
+            while (balls.length < 6) {
+                const ball = Math.floor(Math.random() * 33) + 1;
+                const ballStr = ball.toString().padStart(2, '0');
+                if (!balls.includes(ballStr)) {
+                    balls.push(ballStr);
+                }
+            }
+            return balls.sort((a, b) => parseInt(a) - parseInt(b));
+        }
+
+        // 生成随机蓝球（模拟AI预测）
+        function generateRandomBlueBall() {
+            const ball = Math.floor(Math.random() * 16) + 1;
+            return ball.toString().padStart(2, '0');
+        }
+    </script>
 </body>
 </html>
