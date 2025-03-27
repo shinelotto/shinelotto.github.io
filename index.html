@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
             padding: 20px;
         }
@@ -34,7 +34,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* 新增智能推荐样式 */
         .recommend-section {
             background: white;
             padding: 20px;
@@ -56,10 +55,107 @@
             border-radius: 5px;
             border: 1px solid #eee;
         }
-        
-        /* 调整表格列宽 */
-        .table-header, .table-row {
-            grid-template-columns: 100px 150px 80px repeat(10, 80px);
+
+        /* 新增表格样式 */
+        .trend-table-container {
+            overflow-x: auto;
+            margin: 15px 0;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .table-header, 
+        .table-row {
+            display: grid;
+            min-width: 1600px;
+            grid-template-columns: 
+                100px    
+                220px    
+                80px     
+                80px     
+                80px     
+                100px    
+                100px    
+                100px    
+                80px     
+                80px     
+                80px     
+                80px;    
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .red-ball, .blue-ball {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 14px;
+        }
+
+        .red-ball {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .blue-ball {
+            background: #3498db;
+            color: white;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .pagination button {
+            padding: 8px 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover {
+            background: #f8f9fa;
+            border-color: #c0392b;
+        }
+
+        /* 加载状态 */
+        .loading, .error {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        .error {
+            color: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            .table-header, 
+            .table-row {
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+            .red-ball, .blue-ball {
+                width: 25px;
+                height: 25px;
+                line-height: 25px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -106,18 +202,18 @@
             
             <div class="trend-table-container">
                 <div class="table-header">
-                    <div class="period-col">期号</div>
-                    <div class="ball-col">开奖号码</div>
-                    <div class="stats-col">和值</div>
-                    <div class="stats-col">跨度</div>
-                    <div class="stats-col">AC值</div>
-                    <div class="stats-col">区间比</div>
-                    <div class="stats-col">奇偶比</div>
-                    <div class="stats-col">冷热比</div>
-                    <div class="stats-col">同尾</div>
-                    <div class="stats-col">重号</div>
-                    <div class="stats-col">连号</div>
-                    <div class="stats-col">邻号</div>
+                    <div>期号</div>
+                    <div>开奖号码</div>
+                    <div>和值</div>
+                    <div>跨度</div>
+                    <div>AC值</div>
+                    <div>区间比</div>
+                    <div>奇偶比</div>
+                    <div>冷热比</div>
+                    <div>同尾</div>
+                    <div>重号</div>
+                    <div>连号</div>
+                    <div>邻号</div>
                 </div>
                 
                 <div class="table-body" id="history-data">
@@ -142,9 +238,34 @@ let totalItems = 0;
 
 // 加载数据函数
 async function loadRecentData(periods) {
-    const response = await fetch(`/api/history?periods=${periods}`);
-    const data = await response.json();
-    renderHistoryData(data);
+    const container = document.getElementById('history-data');
+    container.innerHTML = '<div class="loading">数据加载中...</div>';
+    
+    try {
+        // 模拟API请求
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 生成模拟数据
+        const mockData = Array.from({length: periods}, (_, i) => ({
+            id: `2023${String(i+1).padStart(4, '0')}`,
+            redBalls: Array.from({length:6}, () => Math.floor(Math.random()*33+1)),
+            blue: Math.floor(Math.random()*16+1),
+            sum: Math.floor(Math.random()*100+70),
+            range: Math.floor(Math.random()*20+10),
+            acValue: Math.floor(Math.random()*8+5),
+            areaRatio: '2:2:2',
+            oddEven: '4:2',
+            coldHot: '3:3',
+            sameTail: '2组',
+            repeat: '1个',
+            consecutive: '1组',
+            adjacent: '2个'
+        }));
+
+        renderHistoryData(mockData);
+    } catch (error) {
+        container.innerHTML = '<div class="error">数据加载失败</div>';
+    }
 }
 
 // 渲染历史数据
@@ -156,21 +277,21 @@ function renderHistoryData(data) {
         const row = document.createElement('div');
         row.className = 'table-row';
         row.innerHTML = `
-            <div class="period-col">${item.id}</div>
-            <div class="ball-col">
+            <div>${item.id}</div>
+            <div>
                 ${item.redBalls.map(n => `<span class="red-ball">${n}</span>`).join('')}
                 <span class="blue-ball">${item.blue}</span>
             </div>
-            <div class="stats-col">${item.sum}</div>
-            <div class="stats-col">${item.range}</div>
-            <div class="stats-col">${item.acValue}</div>
-            <div class="stats-col">${item.areaRatio}</div>
-            <div class="stats-col">${item.oddEven}</div>
-            <div class="stats-col">${item.coldHot}</div>
-            <div class="stats-col">${item.sameTail}</div>
-            <div class="stats-col">${item.repeat}</div>
-            <div class="stats-col">${item.consecutive}</div>
-            <div class="stats-col">${item.adjacent}</div>
+            <div>${item.sum}</div>
+            <div>${item.range}</div>
+            <div>${item.acValue}</div>
+            <div>${item.areaRatio}</div>
+            <div>${item.oddEven}</div>
+            <div>${item.coldHot}</div>
+            <div>${item.sameTail}</div>
+            <div>${item.repeat}</div>
+            <div>${item.consecutive}</div>
+            <div>${item.adjacent}</div>
         `;
         container.appendChild(row);
     });
