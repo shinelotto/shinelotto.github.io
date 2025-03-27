@@ -67,7 +67,7 @@
         .table-header, 
         .table-row {
             display: grid;
-            min-width: 1600px;
+            min-width: 1500px;
             grid-template-columns: 
                 100px    
                 220px    
@@ -98,6 +98,7 @@
             text-align: center;
             border-radius: 50%;
             font-size: 14px;
+            margin: 0 2px;
         }
 
         .red-ball {
@@ -230,12 +231,22 @@ const itemsPerPage = 20;
 
 // 生成模拟数据（最新数据在数组前面）
 const generateMockData = () => {
-    const today = new Date();
+    // 从2023年开始模拟数据
+    let year = 2023;
+    let issue = 1;
+    
     return Array.from({length: 300}, (_, i) => {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
+        // 每年大约150期
+        if (issue > 150) {
+            year--;
+            issue = 1;
+        }
+        
+        const issueNumber = String(year) + String(issue).padStart(3, '0');
+        issue++;
+        
         return {
-            id: date.toISOString().slice(0,10).replace(/-/g, '') + String(300 - i).padStart(3, '0'),
+            id: issueNumber,
             redBalls: Array.from({length:6}, () => Math.floor(Math.random()*33+1)).sort((a,b) => a - b),
             blue: Math.floor(Math.random()*16+1),
             sum: Math.floor(Math.random()*100+70),
