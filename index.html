@@ -6,83 +6,84 @@
   <style>
     body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
     header { background: #f0f0f0; padding: 10px; text-align: center; }
+    .red-ball { color: red; font-weight: bold; }
+    .blue-ball { color: blue; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 8px; text-align: center; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
   <header>双色球数据分析</header>
   <main>
     <h2>双色球历史开奖记录</h2>
-
-<div class="lottery-table">
-  <table border="1">
-    <thead>
-      <tr>
-        <th>期号</th>
-        <th>红球1</th>
-        <th>红球2</th>
-        <th>红球3</th>
-        <th>红球4</th>
-        <th>红球5</th>
-        <th>红球6</th>
-        <th>蓝球</th>
-      </tr>
-    </thead>
-    <tbody>
-      
-    </tbody>
-  </table>
-</div>
-
-<style>
-  .red-ball {
-    color: red;
-    font-weight: bold;
-  }
-  .blue-ball {
-    color: blue;
-    font-weight: bold;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  th, td {
-    padding: 8px;
-    text-align: center;
-  }
-</style>
+    <div class="lottery-table">
+      <table>
+        <thead>
+          <tr>
+            <th>期号</th>
+            <th>红球1</th>
+            <th>红球2</th>
+            <th>红球3</th>
+            <th>红球4</th>
+            <th>红球5</th>
+            <th>红球6</th>
+            <th>蓝球</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </main>
-<script>
-// 加载CSV数据并填充表格
-fetch('data/ssqhistory.csv')
-  .then(response => response.text())
-  .then(data => {
-    const rows = data.split('\n').filter(row => row.trim() !== '');
-    const tbody = document.querySelector('tbody');
-    
-    // 跳过表头(如果有)
-    const startRow = rows[0].includes('期号') ? 1 : 0;
-    
-    for(let i = startRow; i < rows.length; i++) {
-      const [id, red1, red2, red3, red4, red5, red6, blue] = rows[i].split(',');
-      const tr = document.createElement('tr');
-      
-      tr.innerHTML = `
-        <td>${id}</td>
-        <td class="red-ball">${red1}</td>
-        <td class="red-ball">${red2}</td>
-        <td class="red-ball">${red3}</td>
-        <td class="red-ball">${red4}</td>
-        <td class="red-ball">${red5}</td>
-        <td class="red-ball">${red6}</td>
-        <td class="blue-ball">${blue}</td>
-      `;
-      
-      tbody.appendChild(tr);
-    }
-  })
-  .catch(error => console.error('加载数据失败:', error));
-</script>  
+
+  <script>
+    // 强制两位数显示函数（处理空值和字符串转换）
+    const formatBall = num => {
+      num = String(num || '').trim();
+      return num.length === 1 ? '0' + num : num;
+    };
+
+    // 加载CSV数据
+    fetch('data/ssqhistory.csv')
+      .then(response => {
+        if (!response.ok) throw new Error('网络响应异常');
+        return response.text();
+      })
+      .then(data => {
+        const rows = data.split('\n').filter(row => row.trim() !== '');
+        const tbody = document.querySelector('tbody');
+        
+        // 跳过表头
+        const startRow = rows[0].includes('期号') ? 1 : 0;
+        
+        for(let i = startRow; i < rows.length; i++) {
+          const cells = rows[i].split(',');
+          if (cells.length < 8) continue; // 确保数据完整
+          
+          const [id, red1, red2, red3, red4, red5, red6, blue] = cells;
+          const tr = document.createElement('tr');
+          
+          tr.innerHTML = `
+            <td>${id}</td>
+            <td class="red-ball">${formatBall(red1)}</td>
+            <td class="red-ball">${formatBall(red2)}</td>
+            <td class="red-ball">${formatBall(red3)}</td>
+            <td class="red-ball">${formatBall(red4)}</td>
+            <td class="red-ball">${formatBall(red5)}</td>
+            <td class="red-ball">${formatBall(red6)}</td>
+            <td class="blue-ball">${formatBall(blue)}</td>
+          `;
+          
+          tbody.appendChild(tr);
+        }
+      })
+      .catch(error => {
+        console.error('加载失败:', error);
+        document.querySelector('tbody').innerHTML = `
+          <tr><td colspan="8" style="color:red;text-align:center;">
+            数据加载失败，请检查控制台或刷新页面
+          </td></tr>
+        `;
+      });
+  </script>
 </body>
 </html>
