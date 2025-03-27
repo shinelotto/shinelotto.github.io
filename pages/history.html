@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史开奖数据 - 双色球数据分析</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <header>
+        <h1>双色球历史开奖数据</h1>
+        <p>EASY TO BUY, EASY TO WIN</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="../../index.html">返回主页</a></li>
+            <li><a href="history.html" class="active">历史开奖</a></li>
+            <li><a href="../statistics/red-static/sum.html">统计指标</a></li>
+            <li><a href="../cold-numbers.html">冷门统计</a></li>
+            <li><a href="../prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <div class="filter-controls">
+            <label for="year-filter">选择年份:</label>
+            <select id="year-filter">
+                <option value="all">全部</option>
+                <!-- 年份选项将通过JavaScript动态添加 -->
+            </select>
+            
+            <button id="filter-button">筛选</button>
+            <button id="reset-button">重置</button>
+        </div>
+        
+        <div class="card">
+            <h3>开奖结果</h3>
+            <div class="table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>期号</th>
+                            <th>开奖日期</th>
+                            <th>红球1</th>
+                            <th>红球2</th>
+                            <th>红球3</th>
+                            <th>红球4</th>
+                            <th>红球5</th>
+                            <th>红球6</th>
+                            <th>蓝球</th>
+                            <th>奖池(元)</th>
+                            <th>一等奖注数</th>
+                            <th>一等奖奖金(元)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-data">
+                        <!-- 数据将通过JavaScript动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination" id="pagination-controls">
+                <!-- 分页控件将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
+    </footer>
+    
+    <script src="../../js/history.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷门号码统计 - 双色球数据分析</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <h1>冷门号码统计</h1>
+        <p>EASY TO BUY, EASY TO WIN</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="../index.html">返回主页</a></li>
+            <li><a href="history.html">历史开奖</a></li>
+            <li><a href="statistics/red-static/sum.html">统计指标</a></li>
+            <li><a href="cold-numbers.html" class="active">冷门统计</a></li>
+            <li><a href="prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <div class="filter-controls">
+            <label for="periods-filter">统计期数:</label>
+            <select id="periods-filter">
+                <option value="30">最近30期</option>
+                <option value="50">最近50期</option>
+                <option value="100">最近100期</option>
+                <option value="all">全部期数</option>
+            </select>
+            
+            <button id="filter-button">筛选</button>
+        </div>
+        
+        <div class="card">
+            <h3>红球冷门号码</h3>
+            <div class="chart-container">
+                <canvas id="red-cold-chart"></canvas>
+            </div>
+            
+            <div class="table-container">
+                <table id="red-cold-table">
+                    <thead>
+                        <tr>
+                            <th>红球号码</th>
+                            <th>出现次数</th>
+                            <th>出现频率</th>
+                            <th>平均间隔期数</th>
+                            <th>最大间隔期数</th>
+                            <th>当前间隔期数</th>
+                            <th>冷热指数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="red-cold-data">
+                        <!-- 数据将通过JavaScript动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>蓝球冷门号码</h3>
+            <div class="chart-container">
+                <canvas id="blue-cold-chart"></canvas>
+            </div>
+            
+            <div class="table-container">
+                <table id="blue-cold-table">
+                    <thead>
+                        <tr>
+                            <th>蓝球号码</th>
+                            <th>出现次数</th>
+                            <th>出现频率</th>
+                            <th>平均间隔期数</th>
+                            <th>最大间隔期数</th>
+                            <th>当前间隔期数</th>
+                            <th>冷热指数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="blue-cold-data">
+                        <!-- 数据将通过JavaScript动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/cold-numbers.js"></script>
+</body>
+</html>
