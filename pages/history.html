@@ -35,6 +35,14 @@
         #history-table td:nth-child(9) {
             width: 10%;
         }
+        
+        /* 无数据提示样式 */
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -58,7 +66,29 @@
             <label for="year-filter">选择年份:</label>
             <select id="year-filter">
                 <option value="all">全部</option>
-                <!-- 年份选项将通过JavaScript动态添加 -->
+                <option value="2003">2003年</option>
+                <option value="2004">2004年</option>
+                <option value="2005">2005年</option>
+                <option value="2006">2006年</option>
+                <option value="2007">2007年</option>
+                <option value="2008">2008年</option>
+                <option value="2009">2009年</option>
+                <option value="2010">2010年</option>
+                <option value="2011">2011年</option>
+                <option value="2012">2012年</option>
+                <option value="2013">2013年</option>
+                <option value="2014">2014年</option>
+                <option value="2015">2015年</option>
+                <option value="2016">2016年</option>
+                <option value="2017">2017年</option>
+                <option value="2018">2018年</option>
+                <option value="2019">2019年</option>
+                <option value="2020">2020年</option>
+                <option value="2021">2021年</option>
+                <option value="2022">2022年</option>
+                <option value="2023">2023年</option>
+                <option value="2024">2024年</option>
+                <option value="2025">2025年</option>
             </select>
             
             <button id="filter-button">筛选</button>
@@ -82,7 +112,9 @@
                         </tr>
                     </thead>
                     <tbody id="history-data">
-                        <!-- 数据将通过JavaScript动态填充 -->
+                        <tr>
+                            <td colspan="8" class="no-data">暂无数据，请加载数据文件</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -98,5 +130,16 @@
     </footer>
     
     <script src="../../js/history.js"></script>
+    <script>
+        // 简单的筛选功能
+        document.getElementById('filter-button').addEventListener('click', function() {
+            const selectedYear = document.getElementById('year-filter').value;
+            alert('您选择了: ' + (selectedYear === 'all' ? '全部年份' : selectedYear + '年') + '\n\n提示: 需要加载数据文件后才能显示实际数据');
+        });
+        
+        document.getElementById('reset-button').addEventListener('click', function() {
+            document.getElementById('year-filter').value = 'all';
+        });
+    </script>
 </body>
 </html>
