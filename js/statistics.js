@@ -2,7 +2,7 @@
 async function loadCSVData() {
     try {
         // 修正后的CSV路径（根据项目结构调整）
-        const response = await fetch('../../../../data/ssqhistory.csv');
+        const response = await fetch('../../../../../data/ssqhistory.csv');
         if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
         const csvText = await response.text();
         return parseCSV(csvText);
