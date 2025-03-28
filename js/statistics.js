@@ -1,3 +1,35 @@
+// ================== 新增数据加载函数 ==================
+async function loadCSVData() {
+    try {
+        // 修正后的CSV路径（根据项目结构调整）
+        const response = await fetch('../../../../data/ssqhistory.csv');
+        if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
+        const csvText = await response.text();
+        return parseCSV(csvText);
+    } catch (error) {
+        console.error('数据加载失败:', error);
+        throw error;
+    }
+}
+
+// ================== CSV解析函数 ==================
+function parseCSV(csvText) {
+    const rows = csvText.split('\n').slice(1); // 跳过标题行
+    return rows.map(row => {
+        const [期号, 红球1, 红球2, 红球3, 红球4, 红球5, 红球6, 蓝球] = row.split(',');
+        return {
+            期号: 期号.trim(),
+            红球1: parseInt(红球1),
+            红球2: parseInt(红球2),
+            红球3: parseInt(红球3),
+            红球4: parseInt(红球4),
+            红球5: parseInt(红球5),
+            红球6: parseInt(红球6),
+            蓝球: parseInt(蓝球)
+        };
+    });
+}
+
 // ================== 通用工具函数 ==================
 const ZONE_DEFINITIONS = {
     red: [
@@ -98,7 +130,6 @@ function calculateDynamic(balls, history, type) {
             return balls.filter(n => prevBalls.includes(n)).length;
         }
         case 'neighbor': {
-            // 修正后的邻号计算逻辑
             if (history.length === 0) return 0;
             const prevBalls = getRedBalls(history[history.length - 1]);
             const neighborSet = new Set();
