@@ -202,6 +202,13 @@ function generatePagination(current, total) {
  * 通用工具函数 *
  ​*******************/
 // 修复6：增强链接创建函数
+function createEllipsis() {
+    const span = document.createElement('span');
+    span.className = 'ellipsis';
+    span.textContent = '...';
+    return span;
+}
+
 function createPageLink(text, enabled, onClick) {
     const link = document.createElement('a');
     link.textContent = text;
