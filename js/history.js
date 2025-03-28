@@ -164,11 +164,9 @@ function updatePagination(totalPages) {
 
     // 下一页（修复4：添加边界检查和状态更新）
     container.appendChild(createPageLink('»', currentPage < totalPages, () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            updateTable();
-            updatePagination(totalPages); // 强制更新分页状态
-        }
+        currentPage = Math.min(totalPages, currentPage + 1);
+        updateTable();
+        updatePagination(totalPages);
     }));
 }
 
@@ -179,12 +177,15 @@ function generatePagination(current, total) {
     let end = Math.min(current + range, total);
 
     // 保证至少显示5个页码
-    if (end - start < 4) {
-        if (current < total / 2) {
-            end = Math.min(start + 4, total);
-        } else {
-            start = Math.max(end - 4, 1);
+    if (total > 5) {
+        if (current <= 3) {
+            end = 5;
+        } else if (current >= total - 2) {
+            start = total - 4;
         }
+    } else {
+        start = 1;
+        end = total;
     }
 
     const pages = [];
