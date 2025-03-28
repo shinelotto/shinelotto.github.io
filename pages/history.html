@@ -6,15 +6,12 @@
     <title>历史开奖数据 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 添加自定义样式调整表格列宽 */
         #history-table {
             table-layout: fixed;
             width: 100%;
         }
         #history-table th:nth-child(1),
-        #history-table td:nth-child(1) {
-            width: 10%;
-        }
+        #history-table td:nth-child(1) { width: 10%; }
         #history-table th:nth-child(2),
         #history-table td:nth-child(2),
         #history-table th:nth-child(3),
@@ -28,52 +25,50 @@
         #history-table th:nth-child(7),
         #history-table td:nth-child(7),
         #history-table th:nth-child(8),
-        #history-table td:nth-child(8) {
-            width: 12%;
-        }
-        
-        /* 无数据提示样式 */
+        #history-table td:nth-child(8) { width: 12%; }
+
         .no-data {
             text-align: center;
             padding: 20px;
             color: #666;
             font-style: italic;
         }
-        
-        /* 优化分页样式 */
+
         .pagination {
             display: flex;
             justify-content: center;
             margin-top: 20px;
+            gap: 4px;
         }
         .pagination a {
             color: #333;
             padding: 8px 12px;
             text-decoration: none;
             border: 1px solid #ddd;
-            margin: 0 2px;
             border-radius: 4px;
             min-width: 16px;
             text-align: center;
+            transition: all 0.3s;
         }
         .pagination a.active {
-            background-color: #4CAF50;
+            background: #4CAF50;
             color: white;
-            border: 1px solid #4CAF50;
+            border-color: #4CAF50;
         }
         .pagination a:hover:not(.active) {
-            background-color: #ddd;
+            background: #f5f5f5;
         }
         .pagination a.disabled {
-            color: #ccc;
-            pointer-events: none;
-            cursor: not-allowed;
             opacity: 0.6;
+            pointer-events: none;
         }
         .pagination span.ellipsis {
             padding: 8px 6px;
-            margin: 0 2px;
+            color: #666;
         }
+        
+        .red-ball { color: #c00; font-weight: bold; }
+        .blue-ball { color: #00c; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -97,31 +92,7 @@
             <label for="year-filter">选择年份:</label>
             <select id="year-filter">
                 <option value="all">全部</option>
-                <option value="2003">2003年</option>
-                <option value="2004">2004年</option>
-                <option value="2005">2005年</option>
-                <option value="2006">2006年</option>
-                <option value="2007">2007年</option>
-                <option value="2008">2008年</option>
-                <option value="2009">2009年</option>
-                <option value="2010">2010年</option>
-                <option value="2011">2011年</option>
-                <option value="2012">2012年</option>
-                <option value="2013">2013年</option>
-                <option value="2014">2014年</option>
-                <option value="2015">2015年</option>
-                <option value="2016">2016年</option>
-                <option value="2017">2017年</option>
-                <option value="2018">2018年</option>
-                <option value="2019">2019年</option>
-                <option value="2020">2020年</option>
-                <option value="2021">2021年</option>
-                <option value="2022">2022年</option>
-                <option value="2023">2023年</option>
-                <option value="2024">2024年</option>
-                <option value="2025">2025年</option>
             </select>
-            
             <button id="filter-button">筛选</button>
             <button id="reset-button">重置</button>
         </div>
@@ -134,7 +105,7 @@
                         <tr>
                             <th>期号</th>
                             <th>红球1</th>
-                            <th>红鱼2</th>
+                            <th>红球2</th>
                             <th>红球3</th>
                             <th>红球4</th>
                             <th>红球5</th>
@@ -144,167 +115,20 @@
                     </thead>
                     <tbody id="history-data">
                         <tr>
-                            <td colspan="8" class="no-data">暂无数据，请加载数据文件</td>
+                            <td colspan="8" class="no-data">数据加载中...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            
-            <div class="pagination" id="pagination-controls">
-                <!-- 分页控件将通过JavaScript动态生成 -->
-            </div>
+            <div class="pagination" id="pagination-controls"></div>
         </div>
     </main>
-    
+
     <footer>
         <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
     </footer>
-    
-    <script src="../../js/history.js"></script>
-    <script>
-        // 模拟数据加载和分页功能
-        document.addEventListener('DOMContentLoaded', function() {
-            // 筛选按钮事件
-            document.getElementById('filter-button').addEventListener('click', function() {
-                const selectedYear = document.getElementById('year-filter').value;
-                updatePaginationControls(selectedYear);
-            });
-            
-            // 重置按钮事件
-            document.getElementById('reset-button').addEventListener('click', function() {
-                document.getElementById('year-filter').value = 'all';
-                updatePaginationControls('all');
-            });
-            
-            // 初始化显示
-            updatePaginationControls('all');
-        });
-        
-        // 更新分页控件
-        function updatePaginationControls(selectedYear) {
-            const paginationContainer = document.getElementById('pagination-controls');
-            paginationContainer.innerHTML = '';
-            
-            // 模拟数据页数（实际应从数据计算）
-            const totalPages = selectedYear === 'all' ? 50 : 5; // 假设全部有50页，年份筛选有5页
-            const currentPage = 1; // 当前页码
-            
-            // 创建上一页按钮
-            const prevLink = document.createElement('a');
-            prevLink.href = '#';
-            prevLink.textContent = '上一页';
-            prevLink.className = currentPage === 1 ? 'disabled' : '';
-            prevLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    // 实际应更新页码和表格数据
-                    console.log('上一页');
-                }
-            });
-            paginationContainer.appendChild(prevLink);
-            
-            // 显示页码
-            if (selectedYear === 'all') {
-                // 始终显示第一页
-                const firstPageLink = document.createElement('a');
-                firstPageLink.href = '#';
-                firstPageLink.textContent = '1';
-                firstPageLink.className = currentPage === 1 ? 'active' : '';
-                firstPageLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('跳转到第 1 页');
-                });
-                paginationContainer.appendChild(firstPageLink);
-                
-                // 计算页码范围
-                let startPage = Math.max(2, currentPage - 2);
-                let endPage = Math.min(totalPages - 1, currentPage + 2);
-                
-                // 如果当前页接近第一页，调整结束页码
-                if (currentPage <= 3) {
-                    endPage = Math.min(5, totalPages - 1);
-                }
-                // 如果当前页接近最后一页，调整开始页码
-                else if (currentPage >= totalPages - 2) {
-                    startPage = Math.max(totalPages - 4, 2);
-                }
-                
-                // 如果开始页码不是2，添加省略号
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.className = 'ellipsis';
-                    paginationContainer.appendChild(ellipsis);
-                }
-                
-                // 显示中间页码
-                for (let i = startPage; i <= endPage; i++) {
-                    const pageLink = document.createElement('a');
-                    pageLink.href = '#';
-                    pageLink.textContent = i;
-                    if (i === currentPage) {
-                        pageLink.className = 'active';
-                    } else {
-                        pageLink.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            console.log('跳转到第 ' + i + ' 页');
-                        });
-                    }
-                    paginationContainer.appendChild(pageLink);
-                }
-                
-                // 如果结束页码不是最后一页前一个，添加省略号
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.className = 'ellipsis';
-                    paginationContainer.appendChild(ellipsis);
-                }
-                
-                // 始终显示最后一页（如果总页数大于1）
-                if (totalPages > 1) {
-                    const lastPageLink = document.createElement('a');
-                    lastPageLink.href = '#';
-                    lastPageLink.textContent = totalPages;
-                    lastPageLink.className = currentPage === totalPages ? 'active' : '';
-                    lastPageLink.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        console.log('跳转到第 ' + totalPages + ' 页');
-                    });
-                    paginationContainer.appendChild(lastPageLink);
-                }
-            } else {
-                // 筛选年份时显示完整分页
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageLink = document.createElement('a');
-                    pageLink.href = '#';
-                    pageLink.textContent = i;
-                    if (i === currentPage) {
-                        pageLink.className = 'active';
-                    } else {
-                        pageLink.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            console.log('跳转到第 ' + i + ' 页');
-                        });
-                    }
-                    paginationContainer.appendChild(pageLink);
-                }
-            }
-            
-            // 创建下一页按钮
-            const nextLink = document.createElement('a');
-            nextLink.href = '#';
-            nextLink.textContent = '下一页';
-            nextLink.className = currentPage === totalPages ? 'disabled' : '';
-            nextLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage < totalPages) {
-                    // 实际应更新页码和表格数据
-                    console.log('下一页');
-                }
-            });
-            paginationContainer.appendChild(nextLink);
-        }
-    </script>
+
+    <!-- 只需保留这一个外部JS引用 -->
+    <script src="../js/history.js"></script>
 </body>
 </html>

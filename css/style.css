@@ -186,6 +186,17 @@ tr:hover {
     background-color: #ddd;
 }
 
+/* 新增分页样式 */
+.pagination span.ellipsis {
+    padding: 8px 12px;
+    color: #666;
+}
+
+.pagination a.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* 卡片样式 */
 .card {
     background: white;
