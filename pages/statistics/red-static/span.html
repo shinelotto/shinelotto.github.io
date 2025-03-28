@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>红球跨度统计 - 双色球数据分析</title>
+    <link rel="stylesheet" href="../../../../../css/style.css">
+</head>
+<body>
+    <header>
+        <h1>红球跨度分析</h1>
+        <p>EASY TO BUY, EASY TO WIN</p>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="../../../../../index.html">返回主页</a></li>
+            <li><a href="../../history.html">历史开奖</a></li>
+            <li class="dropdown">
+                <a href="javascript:void(0)" class="active">统计指标</a>
+                <div class="dropdown-content">
+                    <!-- 保持与sum.html相同的导航结构 -->
+                </div>
+            </li>
+            <li><a href="../../cold-numbers.html">冷门统计</a></li>
+            <li><a href="../../prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
+    
+    <main id="stat-container">
+        <!-- 内容由JavaScript自动生成 -->
+        <div class="loading">数据加载中...</div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 TXTX. All Rights Reserved.</p>
+    </footer>
+
+    <script src="../../../../../js/statistics.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const data = await loadCSVData();
+                const results = calculateRedStatic(data, 'span'); // 关键参数
+                renderStatisticsTable(results, '红球跨度统计');
+            } catch (error) {
+                document.querySelector('.loading').textContent = '数据加载失败，请刷新重试';
+            }
+        });
+    </script>
+</body>
+</html>

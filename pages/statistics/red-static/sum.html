@@ -340,3 +340,10 @@
     </script>
 </body>
 </html>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const data = await loadCSVData();
+    const results = calculateRedStatic(data, 'sum'); // 修改参数即可
+    renderStatisticsTable(results, '和值统计');
+});
+</script>

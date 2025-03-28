@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>红球连号统计 - 双色球数据分析</title>
+    <!-- 注意路径回退四级 -->
+    <link rel="stylesheet" href="../../../../../css/style.css">
+</head>
+<body>
+    <header>
+        <h1>红球连号分析</h1>
+        <p>EASY TO BUY, EASY TO WIN</p>
+    </header>
+    
+    <!-- 导航栏 (必须与首页结构完全一致) -->
+    <nav>
+        <ul>
+            <li><a href="../../../../../index.html">返回主页</a></li>
+            <li><a href="../../history.html">历史开奖</a></li>
+            <li class="dropdown">
+                <a href="javascript:void(0)" class="active">统计指标</a>
+                <div class="dropdown-content">
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">红球</a>
+                        <div class="dropdown-subcontent">
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)" class="active">静态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="sum.html">和值</a>
+                                    <a href="span.html">跨度</a>
+                                    <a href="ac.html">AC值</a>
+                                    <a href="zone-ratio.html">区间比</a>
+                                    <a href="odd-even.html">奇偶比</a>
+                                    <a href="road012.html">012路</a>
+                                    <a href="consecutive.html" class="active">连号</a>
+                                    <a href="same-tail.html">同尾</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">动态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="../red-dynamic/cold-hot.html">冷热比</a>
+                                    <a href="../red-dynamic/repeat.html">重号</a>
+                                    <a href="../red-dynamic/neighbor.html">邻号</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">蓝球</a>
+                        <div class="dropdown-subcontent">
+                            <a href="../../statistics/blue/zone4.html">四区</a>
+                            <a href="../../statistics/blue/size.html">大小</a>
+                            <a href="../../statistics/blue/odd-even.html">奇偶</a>
+                            <a href="../../statistics/blue/cold-hot.html">冷热</a>
+                            <a href="../../statistics/blue/amplitude.html">振幅</a>
+                            <a href="../../statistics/blue/tail.html">尾数</a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li><a href="../../cold-numbers.html">冷门统计</a></li>
+            <li><a href="../../prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
+    
+    <!-- 数据展示区域 -->
+    <main id="stat-container">
+        <div class="loading">数据加载中...</div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
+    </footer>
+
+    <!-- 关键脚本 (路径回退四级) -->
+    <script src="../../../../../js/statistics.js"></script>
+    <script>
+        // 页面加载完成后自动执行
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 1. 加载数据
+                const data = await loadCSVData();
+                
+                // 2. 计算连号组数 (关键参数'consecutive')
+                const results = calculateRedStatic(data, 'consecutive');
+                
+                // 3. 显示统计表格
+                renderStatisticsTable(results, '红球连号组数统计');
+            } catch (error) {
+                document.querySelector('.loading').textContent = '数据加载失败，请刷新页面';
+            }
+        });
+    </script>
+</body>
+</html>
