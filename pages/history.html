@@ -31,10 +31,6 @@
         #history-table td:nth-child(8) {
             width: 12%;
         }
-        #history-table th:nth-child(9),
-        #history-table td:nth-child(9) {
-            width: 10%;
-        }
         
         /* 无数据提示样式 */
         .no-data {
@@ -42,6 +38,29 @@
             padding: 20px;
             color: #666;
             font-style: italic;
+        }
+        
+        /* 优化分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination a {
+            color: #333;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .pagination a.active {
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+        }
+        .pagination a:hover:not(.active) {
+            background-color: #ddd;
         }
     </style>
 </head>
@@ -131,15 +150,104 @@
     
     <script src="../../js/history.js"></script>
     <script>
-        // 简单的筛选功能
-        document.getElementById('filter-button').addEventListener('click', function() {
-            const selectedYear = document.getElementById('year-filter').value;
-            alert('您选择了: ' + (selectedYear === 'all' ? '全部年份' : selectedYear + '年') + '\n\n提示: 需要加载数据文件后才能显示实际数据');
+        // 模拟数据加载和分页功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 筛选按钮事件
+            document.getElementById('filter-button').addEventListener('click', function() {
+                const selectedYear = document.getElementById('year-filter').value;
+                updatePaginationControls(selectedYear);
+            });
+            
+            // 重置按钮事件
+            document.getElementById('reset-button').addEventListener('click', function() {
+                document.getElementById('year-filter').value = 'all';
+                updatePaginationControls('all');
+            });
+            
+            // 初始化显示
+            updatePaginationControls('all');
         });
         
-        document.getElementById('reset-button').addEventListener('click', function() {
-            document.getElementById('year-filter').value = 'all';
-        });
+        // 更新分页控件
+        function updatePaginationControls(selectedYear) {
+            const paginationContainer = document.getElementById('pagination-controls');
+            paginationContainer.innerHTML = '';
+            
+            // 模拟数据页数（实际应从数据计算）
+            const totalPages = selectedYear === 'all' ? 10 : 5;
+            const currentPage = 1;
+            
+            // 总是显示上一页按钮（即使在第一页也显示但禁用）
+            const prevLink = document.createElement('a');
+            prevLink.href = '#';
+            prevLink.textContent = '上一页';
+            prevLink.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+            prevLink.style.opacity = currentPage === 1 ? '0.5' : '1';
+            if (currentPage > 1) {
+                prevLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // 实际应更新页码和表格数据
+                    console.log('上一页');
+                });
+            }
+            paginationContainer.appendChild(prevLink);
+            
+            // 显示页码（简化版，实际应根据数据量动态生成）
+            if (selectedYear === 'all') {
+                // 全部数据时显示完整分页
+                for (let i = 1; i <= Math.min(totalPages, 7); i++) {
+                    const pageLink = document.createElement('a');
+                    pageLink.href = '#';
+                    pageLink.textContent = i;
+                    if (i === currentPage) {
+                        pageLink.className = 'active';
+                    } else {
+                        pageLink.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            // 实际应更新页码和表格数据
+                            console.log('跳转到第 ' + i + ' 页');
+                        });
+                    }
+                    paginationContainer.appendChild(pageLink);
+                }
+                
+                if (totalPages > 7) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    paginationContainer.appendChild(ellipsis);
+                    
+                    const lastPageLink = document.createElement('a');
+                    lastPageLink.href = '#';
+                    lastPageLink.textContent = totalPages;
+                    lastPageLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // 实际应更新页码和表格数据
+                        console.log('跳转到最后一页');
+                    });
+                    paginationContainer.appendChild(lastPageLink);
+                }
+            } else {
+                // 筛选年份时只显示当前页码
+                const pageInfo = document.createElement('span');
+                pageInfo.textContent = `第 ${currentPage} 页`;
+                paginationContainer.appendChild(pageInfo);
+            }
+            
+            // 总是显示下一页按钮
+            const nextLink = document.createElement('a');
+            nextLink.href = '#';
+            nextLink.textContent = '下一页';
+            nextLink.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+            nextLink.style.opacity = currentPage === totalPages ? '0.5' : '1';
+            if (currentPage < totalPages) {
+                nextLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // 实际应更新页码和表格数据
+                    console.log('下一页');
+                });
+            }
+            paginationContainer.appendChild(nextLink);
+        }
     </script>
 </body>
 </html>
