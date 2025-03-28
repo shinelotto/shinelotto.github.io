@@ -1,11 +1,28 @@
 document.addEventListener('DOMContentLoaded', async function() {
+    // 添加加载状态提示
+    const tableBody = document.getElementById('history-data');
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="8" class="no-data">正在加载数据...</td>
+        </tr>
+    `;
+
     try {
-        // 尝试加载数据
-        const response = await fetch('ssqhistory.csv');
-        if (!response.ok) throw new Error('数据文件加载失败');
+        // 修正文件路径（从项目根目录指向data文件夹）
+        const response = await fetch('../data/ssqhistory.csv');
+        if (!response.ok) {
+            throw new Error(`文件加载失败，状态码: ${response.status}`);
+        }
         
         const csvData = await response.text();
+        if (!csvData || csvData.trim().length === 0) {
+            throw new Error('数据文件为空');
+        }
+        
         const allData = parseSSQCSV(csvData);
+        if (allData.length === 0) {
+            throw new Error('没有解析到有效数据');
+        }
         
         // 初始化筛选器
         initYearFilter(allData);
@@ -27,53 +44,68 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
         
     } catch (error) {
-        console.error('发生错误:', error);
+        console.error('数据加载错误:', error);
         document.getElementById('history-data').innerHTML = `
             <tr>
-                <td colspan="8" class="no-data">数据加载失败: ${error.message}</td>
+                <td colspan="8" class="no-data error">数据加载失败: ${error.message}</td>
             </tr>
         `;
     }
 });
 
-// 解析双色球CSV数据（根据您提供的格式）
+// 增强版CSV解析（处理BOM头和格式问题）
 function parseSSQCSV(csvText) {
-    const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    const headers = ['期号', '红球1', '红球2', '红球3', '红球4', '红球5', '红球6', '蓝球'];
-    const result = [];
+    // 移除UTF-8 BOM头（如果有）
+    if (csvText.charCodeAt(0) === 0xFEFF) {
+        csvText = csvText.substring(1);
+    }
     
-    for (let i = 0; i < lines.length; i++) {
+    const lines = csvText.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+    
+    // 自动检测表头（兼容有无表头的情况）
+    const firstLine = lines[0].split(',');
+    const hasHeader = firstLine.some(col => col.includes('红球') || col.includes('期号'));
+    const dataStartIndex = hasHeader ? 1 : 0;
+    
+    const result = [];
+    for (let i = dataStartIndex; i < lines.length; i++) {
         const currentLine = lines[i].split(',');
-        if (currentLine.length < 8) continue; // 跳过不完整的行
+        if (currentLine.length < 8) continue;
         
-        const obj = {};
-        for (let j = 0; j < headers.length; j++) {
-            obj[headers[j]] = currentLine[j] ? currentLine[j].trim() : '';
+        const item = {
+            '期号': currentLine[0]?.trim() || '',
+            '红球1': currentLine[1]?.trim() || '',
+            '红球2': currentLine[2]?.trim() || '',
+            '红球3': currentLine[3]?.trim() || '',
+            '红球4': currentLine[4]?.trim() || '',
+            '红球5': currentLine[5]?.trim() || '',
+            '红球6': currentLine[6]?.trim() || '',
+            '蓝球': currentLine[7]?.trim() || '',
+            // 从期号提取年份（如2003001 → 2003）
+            'year': currentLine[0]?.substring(0, 4) || '未知'
+        };
+        
+        // 验证数据有效性（至少需要期号和第一个红球）
+        if (item['期号'] && item['红球1']) {
+            result.push(item);
         }
-        
-        // 添加年份信息用于筛选
-        const period = obj['期号'];
-        obj.year = period.substring(0, 4); // 从期号中提取年份
-        
-        result.push(obj);
     }
     
     return result;
 }
 
-// 初始化年份筛选器
+// 初始化年份筛选器（保持不变）
 function initYearFilter(data) {
     const yearFilter = document.getElementById('year-filter');
     
-    // 清空现有选项（保留"全部"选项）
     while (yearFilter.options.length > 1) {
         yearFilter.remove(1);
     }
     
-    // 从数据中提取所有年份
     const years = [...new Set(data.map(item => item.year))].sort((a, b) => b - a);
     
-    // 添加年份选项
     years.forEach(year => {
         const option = document.createElement('option');
         option.value = year;
@@ -82,13 +114,13 @@ function initYearFilter(data) {
     });
 }
 
-// 按年份筛选数据
+// 按年份筛选数据（保持不变）
 function filterDataByYear(data, year) {
     if (year === 'all') return data;
     return data.filter(item => item.year === year);
 }
 
-// 显示数据
+// 显示数据（保持不变）
 function displayData(data) {
     const tableBody = document.getElementById('history-data');
     
@@ -102,7 +134,6 @@ function displayData(data) {
         return;
     }
     
-    // 分页设置
     const itemsPerPage = 20;
     let currentPage = 1;
     
@@ -119,12 +150,10 @@ function displayData(data) {
         paginatedData.forEach(item => {
             const row = document.createElement('tr');
             
-            // 期号
             const periodCell = document.createElement('td');
             periodCell.textContent = item['期号'] || '';
             row.appendChild(periodCell);
             
-            // 红球
             for (let i = 1; i <= 6; i++) {
                 const ballCell = document.createElement('td');
                 ballCell.textContent = item[`红球${i}`] || '';
@@ -132,7 +161,6 @@ function displayData(data) {
                 row.appendChild(ballCell);
             }
             
-            // 蓝球
             const blueBallCell = document.createElement('td');
             blueBallCell.textContent = item['蓝球'] || '';
             blueBallCell.className = 'blue-ball';
@@ -141,7 +169,6 @@ function displayData(data) {
             tableBody.appendChild(row);
         });
         
-        // 更新分页控件
         updatePagination(totalPages, currentPage);
     }
     
@@ -149,7 +176,6 @@ function displayData(data) {
         const paginationContainer = document.getElementById('pagination-controls');
         paginationContainer.innerHTML = '';
         
-        // 上一页按钮
         if (currentPage > 1) {
             const prevLink = document.createElement('a');
             prevLink.href = '#';
@@ -162,7 +188,6 @@ function displayData(data) {
             paginationContainer.appendChild(prevLink);
         }
         
-        // 页码按钮
         for (let i = 1; i <= totalPages; i++) {
             const pageLink = document.createElement('a');
             pageLink.href = '#';
@@ -181,7 +206,6 @@ function displayData(data) {
             paginationContainer.appendChild(pageLink);
         }
         
-        // 下一页按钮
         if (currentPage < totalPages) {
             const nextLink = document.createElement('a');
             nextLink.href = '#';
