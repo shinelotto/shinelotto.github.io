@@ -134,42 +134,57 @@ function updatePagination(totalPages) {
     const container = document.getElementById('pagination-controls');
     container.innerHTML = '';
 
-    // 上一页
+    // 上一页（修复1：添加边界检查和状态更新）
     container.appendChild(createPageLink('«', currentPage > 1, () => {
-        currentPage--;
-        updateTable();
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable();
+            updatePagination(totalPages); // 强制更新分页状态
+        }
     }));
 
-    // 页码
+    // 页码生成（修复2：正确设置激活状态）
     pages.forEach(page => {
         if (page === '...') {
             container.appendChild(createEllipsis());
         } else {
+            const pageNumber = Number(page);
             const link = createPageLink(page, true, () => {
-                currentPage = page;
+                currentPage = pageNumber;
                 updateTable();
+                updatePagination(totalPages); // 强制更新分页状态
             });
-            if (page === currentPage) link.className = 'active';
+            // 修复3：准确判断激活状态
+            if (pageNumber === currentPage) {
+                link.classList.add('active');
+            }
             container.appendChild(link);
         }
     });
 
-    // 下一页
+    // 下一页（修复4：添加边界检查和状态更新）
     container.appendChild(createPageLink('»', currentPage < totalPages, () => {
-        currentPage++;
-        updateTable();
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable();
+            updatePagination(totalPages); // 强制更新分页状态
+        }
     }));
 }
 
+// 修复5：优化分页生成算法
 function generatePagination(current, total) {
     const range = 2;
     let start = Math.max(current - range, 1);
     let end = Math.min(current + range, total);
 
-    if (current <= range + 1) {
-        end = Math.min(range * 2 + 1, total);
-    } else if (current >= total - range) {
-        start = Math.max(total - range * 2, 1);
+    // 保证至少显示5个页码
+    if (end - start < 4) {
+        if (current < total / 2) {
+            end = Math.min(start + 4, total);
+        } else {
+            start = Math.max(end - 4, 1);
+        }
     }
 
     const pages = [];
@@ -185,13 +200,23 @@ function generatePagination(current, total) {
 /********************
  * 通用工具函数 *
  ​*******************/
+// 修复6：增强链接创建函数
 function createPageLink(text, enabled, onClick) {
     const link = document.createElement('a');
     link.textContent = text;
-    link.href = '#';
+    link.href = 'javascript:void(0);'; // 防止页面跳动
     
+    // 数字页码处理
+    if (typeof text === 'string' && !isNaN(text)) {
+        const pageNumber = Number(text);
+        if (pageNumber === currentPage) {
+            link.className = 'active';
+        }
+    }
+
     if (!enabled) {
         link.className = 'disabled';
+        link.style.pointerEvents = 'none';
     } else {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -199,11 +224,4 @@ function createPageLink(text, enabled, onClick) {
         });
     }
     return link;
-}
-
-function createEllipsis() {
-    const span = document.createElement('span');
-    span.className = 'ellipsis';
-    span.textContent = '...';
-    return span;
 }

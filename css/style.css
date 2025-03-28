@@ -176,10 +176,11 @@ tr:hover {
     margin: 0 4px;
 }
 
+/* 修改点：分页激活状态颜色改为绿色 */
 .pagination a.active {
-    background-color: #e74c3c;
-    color: white;
-    border: 1px solid #e74c3c;
+    background: #4CAF50 !important;
+    color: white !important;
+    border-color: #4CAF50 !important;
 }
 
 .pagination a:hover:not(.active) {
