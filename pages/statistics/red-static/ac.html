@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>红球AC值统计 - 双色球数据分析</title>
+    <!-- 注意路径回退四级 -->
     <link rel="stylesheet" href="../../../../../css/style.css">
     <style>
-        /* 新增分页样式 */
+        /* 新增分页样式（原样复制历史页面样式） */
         .pagination {
             display: flex;
             justify-content: center;
@@ -28,7 +29,7 @@
             color: white;
             border-color: #4CAF50;
         }
-        .pagination a:hover:not(.active):not(.disabled) {
+        .pagination a:hover:not(.active) {
             background: #f5f5f5;
         }
         .pagination a.disabled {
@@ -46,8 +47,8 @@
         <h1>红球AC值分析</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
-
-    <!-- 导航栏保持原有结构 -->
+    
+    <!-- 导航栏 (保持原结构不变) -->
     <nav>
         <ul>
             <li><a href="../../../../../index.html">返回主页</a></li>
@@ -55,46 +56,28 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 保持原有下拉菜单结构 -->
+                    <!-- 保持原导航结构不变 -->
                 </div>
             </li>
             <li><a href="../../cold-numbers.html">冷门统计</a></li>
             <li><a href="../../prediction.html">脑机结合预测</a></li>
         </ul>
     </nav>
-
-    <!-- 修改后的主内容区 -->
-    <main>
-        <div class="card">
-            <h3>红球AC值统计</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>期号</th>
-                            <th>AC值</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ac-data">
-                        <tr><td colspan="2" class="no-data">数据加载中...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <!-- 新增分页控件 -->
-            <div class="pagination" id="pagination-controls">
-                <a href="javascript:void(0)" class="page-prev disabled">&lt;</a>
-                <a href="javascript:void(0)" class="page-next">&gt;</a>
-            </div>
-        </div>
+    
+    <!-- 数据展示区域（仅添加分页控件） -->
+    <main id="stat-container">
+        <div class="loading">数据加载中...</div>
+        <div class="pagination" id="pagination-controls"></div>
     </main>
 
     <footer>
         <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
     </footer>
 
+    <!-- 关键脚本 (仅添加分页逻辑) -->
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 分页参数配置
+        // 分页参数（保持与历史页面相同配置）
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let totalPages = 1;
@@ -102,42 +85,61 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 加载所有数据
+                // 1. 加载所有数据（保持原逻辑）
                 allData = await loadCSVData();
                 totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
                 
-                // 初始显示第一页
+                // 2. 显示第一页数据
                 renderTable(currentPage);
                 renderPagination();
 
             } catch (error) {
-                document.getElementById('ac-data').innerHTML = 
-                    `<tr><td colspan="2">数据加载失败，请刷新页面</td></tr>`;
-                console.error(error);
+                document.querySelector('.loading').textContent = '数据加载失败，请刷新页面';
             }
         });
 
-        // 表格渲染函数
+        // 渲染表格（保持原渲染方式）
         function renderTable(page) {
             const start = (page - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
-            const results = calculateRedStatic(allData.slice(start, end), 'ac');
-
-            const tbody = document.getElementById('ac-data');
-            tbody.innerHTML = results.map(item => `
-                <tr>
-                    <td>${item.issue}</td>
-                    <td>${item.value}</td>
-                </tr>
-            `).join('');
+            const pageData = allData.slice(start, end);
+            const results = calculateRedStatic(pageData, 'ac');
+            
+            const container = document.getElementById('stat-container');
+            container.innerHTML = `
+                <div class="card">
+                    <h3>红球AC值统计（第${page}页/共${totalPages}页）</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>期号</th>
+                                    <th>AC值</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(item => `
+                                    <tr>
+                                        <td>${item.issue}</td>
+                                        <td>${item.value}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="pagination" id="pagination-controls"></div>
+            `;
+            
+            // 重新绑定分页事件
+            renderPagination();
         }
 
-        // 分页生成逻辑（包含上下页按钮）
+        // 分页生成逻辑（完全复制历史页面代码）
         function renderPagination() {
             const pages = [];
             const MAX_VISIBLE = 5;
-            
-            // 页码生成逻辑
+
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 2);
 
@@ -147,14 +149,12 @@
                 startPage = Math.max(1, totalPages - 4);
             }
 
-            // 构建页码数组
             if (startPage > 1) pages.push(1);
             if (startPage > 2) pages.push('...');
             for (let i = startPage; i <= endPage; i++) pages.push(i);
             if (endPage < totalPages - 1) pages.push('...');
             if (endPage < totalPages) pages.push(totalPages);
 
-            // 生成分页HTML
             const container = document.getElementById('pagination-controls');
             container.innerHTML = `
                 <a class="page-prev ${currentPage === 1 ? 'disabled' : ''}">&lt;</a>
@@ -166,33 +166,27 @@
                 <a class="page-next ${currentPage === totalPages ? 'disabled' : ''}">&gt;</a>
             `;
 
-            // 事件监听
+            // 事件绑定（保持原事件处理方式）
             document.querySelector('.page-prev').addEventListener('click', () => {
                 if(currentPage > 1) {
                     currentPage--;
-                    updateView();
+                    renderTable(currentPage);
                 }
             });
 
             document.querySelector('.page-next').addEventListener('click', () => {
                 if(currentPage < totalPages) {
                     currentPage++;
-                    updateView();
+                    renderTable(currentPage);
                 }
             });
 
             document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', () => {
                     currentPage = parseInt(link.dataset.page);
-                    updateView();
+                    renderTable(currentPage);
                 });
             });
-        }
-
-        // 统一更新视图
-        function updateView() {
-            renderTable(currentPage);
-            renderPagination();
         }
     </script>
 </body>
