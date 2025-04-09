@@ -6,7 +6,6 @@
     <title>红球跨度统计 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../../../../css/style.css">
     <style>
-        /* 新增分页样式（与历史页面完全一致） */
         .pagination {
             display: flex;
             justify-content: center;
@@ -54,7 +53,44 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 保持原有导航结构 -->
+                    <!-- 从ac.html复制的完整菜单结构 -->
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">红球</a>
+                        <div class="dropdown-subcontent">
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)" class="active">静态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="sum.html">和值</a>
+                                    <a href="span.html" class="active">跨度</a>
+                                    <a href="ac.html">AC值</a>
+                                    <a href="zone-ratio.html">区间比</a>
+                                    <a href="odd-even.html">奇偶比</a>
+                                    <a href="road012.html">012路</a>
+                                    <a href="consecutive.html">连号</a>
+                                    <a href="same-tail.html">同尾</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">动态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="../red-dynamic/cold-hot.html">冷热比</a>
+                                    <a href="../red-dynamic/repeat.html">重号</a>
+                                    <a href="../red-dynamic/neighbor.html">邻号</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">蓝球</a>
+                        <div class="dropdown-subcontent">
+                            <a href="../../statistics/blue/zone4.html">四区</a>
+                            <a href="../../statistics/blue/size.html">大小</a>
+                            <a href="../../statistics/blue/odd-even.html">奇偶</a>
+                            <a href="../../statistics/blue/cold-hot.html">冷热</a>
+                            <a href="../../statistics/blue/amplitude.html">振幅</a>
+                            <a href="../../statistics/blue/tail.html">尾数</a>
+                        </div>
+                    </div>
                 </div>
             </li>
             <li><a href="../../cold-numbers.html">冷门统计</a></li>
@@ -78,10 +114,8 @@
                     </tbody>
                 </table>
             </div>
-            <!-- 分页控件（新增上一页/下一页） -->
             <div class="pagination" id="pagination-controls">
                 <a href="javascript:void(0)" class="page-prev disabled">&lt;</a>
-                <!-- 页码由JS动态生成 -->
                 <a href="javascript:void(0)" class="page-next">&gt;</a>
             </div>
         </div>
@@ -93,7 +127,7 @@
 
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 分页配置（与历史页面一致）
+        // 分页配置（保持不变）
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let totalPages = 1;
@@ -101,14 +135,10 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 加载数据
                 allData = await loadCSVData();
                 totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
-                
-                // 初始渲染
                 renderTable(currentPage);
                 renderPagination();
-
             } catch (error) {
                 document.getElementById('span-data').innerHTML = 
                     `<tr><td colspan="2">数据加载失败，请刷新页面</td></tr>`;
@@ -116,7 +146,6 @@
             }
         });
 
-        // 渲染表格（保持原有结构）
         function renderTable(page) {
             const start = (page - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
@@ -131,59 +160,45 @@
             `).join('');
         }
 
-        // 分页逻辑（新增上一页/下一页功能）
         function renderPagination() {
             const pages = [];
             const MAX_VISIBLE = 5;
             
-            // 生成页码范围
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 2);
 
-            // 边界处理
-            if (currentPage < 3) {
-                endPage = Math.min(5, totalPages);
-            } else if (currentPage > totalPages - 2) {
-                startPage = Math.max(1, totalPages - 4);
-            }
+            if (currentPage < 3) endPage = Math.min(5, totalPages);
+            if (currentPage > totalPages - 2) startPage = Math.max(1, totalPages - 4);
 
-            // 构建页码数组
             if (startPage > 1) pages.push(1);
             if (startPage > 2) pages.push('...');
             for (let i = startPage; i <= endPage; i++) pages.push(i);
             if (endPage < totalPages - 1) pages.push('...');
             if (endPage < totalPages) pages.push(totalPages);
 
-            // 生成分页HTML
             const container = document.getElementById('pagination-controls');
             container.innerHTML = `
-                <a href="javascript:void(0)" class="page-prev ${currentPage === 1 ? 'disabled' : ''}">&lt;</a>
-                ${pages.map(page => {
-                    if (page === '...') return `<span class="ellipsis">...</span>`;
-                    return `<a href="javascript:void(0)" 
-                            class="${page === currentPage ? 'active' : ''}" 
-                            data-page="${page}">${page}</a>`;
-                }).join('')}
-                <a href="javascript:void(0)" class="page-next ${currentPage === totalPages ? 'disabled' : ''}">&gt;</a>
+                <a class="page-prev ${currentPage === 1 ? 'disabled' : ''}">&lt;</a>
+                ${pages.map(page => 
+                    page === '...' ? 
+                    `<span class="ellipsis">...</span>` : 
+                    `<a class="${page === currentPage ? 'active' : ''}" data-page="${page}">${page}</a>`
+                ).join('')}
+                <a class="page-next ${currentPage === totalPages ? 'disabled' : ''}">&gt;</a>
             `;
 
-            // 添加事件监听
-            document.querySelectorAll('.page-prev').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        updatePagination();
-                    }
-                });
+            document.querySelector('.page-prev').addEventListener('click', () => {
+                if(currentPage > 1) {
+                    currentPage--;
+                    updatePagination();
+                }
             });
 
-            document.querySelectorAll('.page-next').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        updatePagination();
-                    }
-                });
+            document.querySelector('.page-next').addEventListener('click', () => {
+                if(currentPage < totalPages) {
+                    currentPage++;
+                    updatePagination();
+                }
             });
 
             document.querySelectorAll('[data-page]').forEach(link => {
@@ -194,7 +209,6 @@
             });
         }
 
-        // 统一更新方法
         function updatePagination() {
             renderTable(currentPage);
             renderPagination();
