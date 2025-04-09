@@ -4,16 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>红球区间比统计 - 双色球数据分析</title>
-    <!-- 注意路径回退四级 -->
     <link rel="stylesheet" href="../../../../../css/style.css">
+    <style>
+        /* 新增分页样式（与span.html完全一致） */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 4px;
+        }
+        .pagination a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 16px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .pagination a.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .pagination a:hover:not(.active):not(.disabled) {
+            background: #f5f5f5;
+        }
+        .pagination a.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .pagination span.ellipsis {
+            padding: 8px 6px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>红球区间比分析</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
-    
-    <!-- 导航栏 (必须与首页结构完全一致) -->
+
     <nav>
         <ul>
             <li><a href="../../../../../index.html">返回主页</a></li>
@@ -64,34 +98,124 @@
             <li><a href="../../prediction.html">脑机结合预测</a></li>
         </ul>
     </nav>
-    
-    <!-- 数据展示区域 -->
-    <main id="stat-container">
-        <div class="loading">数据加载中...</div>
+
+    <!-- 修改后的数据区域 -->
+    <main>
+        <div class="card">
+            <h3>红球区间比统计</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>期号</th>
+                            <th>区间比</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zone-data">
+                        <tr><td colspan="2" class="no-data">数据加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- 新增分页控件 -->
+            <div class="pagination" id="pagination-controls">
+                <a href="javascript:void(0)" class="page-prev disabled">&lt;</a>
+                <a href="javascript:void(0)" class="page-next">&gt;</a>
+            </div>
+        </div>
     </main>
 
     <footer>
         <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
     </footer>
 
-    <!-- 关键脚本 (路径回退四级) -->
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 页面加载完成后自动执行
+        // 分页逻辑（与span.html完全一致）
+        const ITEMS_PER_PAGE = 50;
+        let currentPage = 1;
+        let totalPages = 1;
+        let allData = [];
+
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 1. 加载数据
-                const data = await loadCSVData();
-                
-                // 2. 计算区间比 (关键参数'zone')
-                const results = calculateRedStatic(data, 'zone');
-                
-                // 3. 显示统计表格
-                renderStatisticsTable(results, '红球区间比统计');
+                allData = await loadCSVData();
+                totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
+                renderTable(currentPage);
+                renderPagination();
             } catch (error) {
-                document.querySelector('.loading').textContent = '数据加载失败，请刷新页面';
+                document.getElementById('zone-data').innerHTML = 
+                    `<tr><td colspan="2">数据加载失败，请刷新页面</td></tr>`;
+                console.error(error);
             }
         });
+
+        function renderTable(page) {
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const results = calculateRedStatic(allData.slice(start, end), 'zone');
+
+            const tbody = document.getElementById('zone-data');
+            tbody.innerHTML = results.map(item => `
+                <tr>
+                    <td>${item.issue}</td>
+                    <td>${item.value}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const pages = [];
+            const MAX_VISIBLE = 5;
+            
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (currentPage < 3) endPage = Math.min(5, totalPages);
+            if (currentPage > totalPages - 2) startPage = Math.max(1, totalPages - 4);
+
+            if (startPage > 1) pages.push(1);
+            if (startPage > 2) pages.push('...');
+            for (let i = startPage; i <= endPage; i++) pages.push(i);
+            if (endPage < totalPages - 1) pages.push('...');
+            if (endPage < totalPages) pages.push(totalPages);
+
+            const container = document.getElementById('pagination-controls');
+            container.innerHTML = `
+                <a class="page-prev ${currentPage === 1 ? 'disabled' : ''}">&lt;</a>
+                ${pages.map(page => 
+                    page === '...' ? 
+                    `<span class="ellipsis">...</span>` : 
+                    `<a class="${page === currentPage ? 'active' : ''}" data-page="${page}">${page}</a>`
+                ).join('')}
+                <a class="page-next ${currentPage === totalPages ? 'disabled' : ''}">&gt;</a>
+            `;
+
+            document.querySelector('.page-prev').addEventListener('click', () => {
+                if(currentPage > 1) {
+                    currentPage--;
+                    updateView();
+                }
+            });
+
+            document.querySelector('.page-next').addEventListener('click', () => {
+                if(currentPage < totalPages) {
+                    currentPage++;
+                    updateView();
+                }
+            });
+
+            document.querySelectorAll('[data-page]').forEach(link => {
+                link.addEventListener('click', () => {
+                    currentPage = parseInt(link.dataset.page);
+                    updateView();
+                });
+            });
+        }
+
+        function updateView() {
+            renderTable(currentPage);
+            renderPagination();
+        }
     </script>
 </body>
 </html>
