@@ -20,7 +20,7 @@
             min-width: 16px;
             text-align: center;
             transition: all 0.3s;
-            cursor: pointer;  <!-- 唯一修改处：新增光标样式 -->
+            cursor: pointer;
         }
         .pagination a.active {
             background: #4CAF50;
@@ -41,7 +41,6 @@
     </style>
 </head>
 <body>
-    <!-- 以下内容完全保持不变 -->
     <header>
         <h1>红球和值统计</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
@@ -54,7 +53,44 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 保持原有菜单结构 -->
+                    <!-- 从ac.html复制的完整菜单结构 -->
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">红球</a>
+                        <div class="dropdown-subcontent">
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)" class="active">静态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="sum.html" class="active">和值</a>
+                                    <a href="span.html">跨度</a>
+                                    <a href="ac.html">AC值</a>
+                                    <a href="zone-ratio.html">区间比</a>
+                                    <a href="odd-even.html">奇偶比</a>
+                                    <a href="road012.html">012路</a>
+                                    <a href="consecutive.html">连号</a>
+                                    <a href="same-tail.html">同尾</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">动态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="../red-dynamic/cold-hot.html">冷热比</a>
+                                    <a href="../red-dynamic/repeat.html">重号</a>
+                                    <a href="../red-dynamic/neighbor.html">邻号</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">蓝球</a>
+                        <div class="dropdown-subcontent">
+                            <a href="../../statistics/blue/zone4.html">四区</a>
+                            <a href="../../statistics/blue/size.html">大小</a>
+                            <a href="../../statistics/blue/odd-even.html">奇偶</a>
+                            <a href="../../statistics/blue/cold-hot.html">冷热</a>
+                            <a href="../../statistics/blue/amplitude.html">振幅</a>
+                            <a href="../../statistics/blue/tail.html">尾数</a>
+                        </div>
+                    </div>
                 </div>
             </li>
             <li><a href="../../cold-numbers.html">冷门统计</a></li>
