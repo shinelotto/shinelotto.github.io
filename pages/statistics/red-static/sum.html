@@ -6,7 +6,7 @@
     <title>红球和值统计 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../../../../css/style.css">
     <style>
-        /* 新增分页样式（与历史开奖页面一致） */
+        /* 新增分页样式（与历史页面一致） */
         .pagination a.active {
             background: #4CAF50 !important;
             border-color: #4CAF50 !important;
@@ -17,19 +17,39 @@
     </style>
 </head>
 <body>
-    <!-- 保持原有header和nav结构不变 -->
+    <header>
+        <h1>红球和值统计</h1>
+        <p>EASY TO BUY, EASY TO WIN</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="../../../../../index.html">返回主页</a></li>
+            <li><a href="../../history.html">历史开奖</a></li>
+            <li class="dropdown">
+                <a href="javascript:void(0)" class="active">统计指标</a>
+                <div class="dropdown-content">
+                    <!-- 保持原有导航结构不变 -->
+                </div>
+            </li>
+            <li><a href="../../cold-numbers.html">冷门统计</a></li>
+            <li><a href="../../prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
 
     <main id="stat-container">
         <div class="loading">数据加载中...</div>
-        <!-- 分页容器（与历史开奖页面结构一致） -->
+        <!-- 新增分页控件（与历史页面相同结构） -->
         <div class="pagination" id="pagination-controls"></div>
     </main>
 
-    <!-- 保持原有footer结构 -->
+    <footer>
+        <p>&copy; 2023 双色球数据分析系统. 保留所有权利.</p>
+    </footer>
 
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 配置参数（与历史开奖页面一致）
+        // 配置分页参数（与历史页面一致）
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let totalPages = 1;
@@ -37,8 +57,9 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 加载数据
+                // 加载所有数据
                 allData = await loadCSVData();
+                // 计算总页数
                 totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
                 
                 // 初始渲染
@@ -51,14 +72,16 @@
             }
         });
 
-        // 渲染表格（保持与历史页面一致的卡片结构）
+        // 渲染数据表格（带分页功能）
         function renderTable(page) {
             const start = (page - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
             const pageData = allData.slice(start, end);
             
+            // 计算和值
             const results = calculateRedStatic(pageData, 'sum');
             
+            // 生成表格HTML
             const container = document.getElementById('stat-container');
             container.innerHTML = `
                 <div class="card">
@@ -85,35 +108,31 @@
             `;
         }
 
-        // 分页逻辑（完全复用历史页面的代码）
+        // 生成分页控件（与历史页面相同逻辑）
         function renderPagination() {
             const container = document.getElementById('pagination-controls');
             const pages = [];
-            const MAX_VISIBLE = 5;
+            const MAX_VISIBLE = 5;  // 最大可见页码数
 
-            // 生成页码范围
+            // 计算页码范围
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 2);
 
-            // 边界情况处理
-            if (currentPage < 4) {
-                endPage = Math.min(5, totalPages);
-            } else if (currentPage > totalPages - 3) {
+            // 处理边界情况
+            if (currentPage < 3) {
+                endPage = Math.min(MAX_VISIBLE, totalPages);
+            } else if (currentPage > totalPages - 2) {
                 startPage = Math.max(1, totalPages - 4);
             }
 
-            // 添加首页
+            // 生成页码数组
             if (startPage > 1) pages.push(1);
             if (startPage > 2) pages.push('...');
-
-            // 添加中间页码
             for (let i = startPage; i <= endPage; i++) pages.push(i);
-
-            // 添加尾页
             if (endPage < totalPages - 1) pages.push('...');
             if (endPage < totalPages) pages.push(totalPages);
 
-            // 生成HTML
+            // 生成分页HTML
             container.innerHTML = pages.map(page => {
                 if (page === '...') {
                     return `<span class="ellipsis">...</span>`;
@@ -127,7 +146,7 @@
                 `;
             }).join('');
 
-            // 添加事件监听
+            // 添加点击事件
             document.querySelectorAll('#pagination-controls a').forEach(link => {
                 link.addEventListener('click', () => {
                     currentPage = parseInt(link.dataset.page);
