@@ -6,7 +6,6 @@
     <title>红球和值统计 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../../../../css/style.css">
     <style>
-        /* 保持与历史页面相同的内联分页样式 */
         .pagination {
             display: flex;
             justify-content: center;
@@ -28,8 +27,12 @@
             color: white;
             border-color: #4CAF50;
         }
-        .pagination a:hover:not(.active) {
+        .pagination a:hover:not(.active):not(.disabled) {
             background: #f5f5f5;
+        }
+        .pagination a.disabled {
+            opacity: 0.6;
+            pointer-events: none;
         }
         .pagination span.ellipsis {
             padding: 8px 6px;
@@ -43,7 +46,6 @@
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
 
-    <!-- 保持原有导航结构 -->
     <nav>
         <ul>
             <li><a href="../../../../../index.html">返回主页</a></li>
@@ -51,7 +53,7 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 具体菜单内容保持不变 -->
+                    <!-- 保持原有菜单结构 -->
                 </div>
             </li>
             <li><a href="../../cold-numbers.html">冷门统计</a></li>
@@ -75,8 +77,12 @@
                     </tbody>
                 </table>
             </div>
-            <!-- 添加的分页控件（与历史页面一致） -->
-            <div class="pagination" id="pagination-controls"></div>
+            <!-- 新增分页控件（带上下页按钮） -->
+            <div class="pagination" id="pagination-controls">
+                <a href="javascript:void(0)" class="page-prev disabled">&lt;</a>
+                <!-- 页码由JS生成 -->
+                <a href="javascript:void(0)" class="page-next">&gt;</a>
+            </div>
         </div>
     </main>
 
@@ -86,7 +92,6 @@
 
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 完全复用历史页面的分页参数
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let totalPages = 1;
@@ -96,11 +101,8 @@
             try {
                 allData = await loadCSVData();
                 totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
-                
-                // 初始显示第一页
                 renderTable(currentPage);
                 renderPagination();
-
             } catch (error) {
                 document.getElementById('sum-data').innerHTML = 
                     `<tr><td colspan="2">数据加载失败，请刷新页面</td></tr>`;
@@ -108,7 +110,6 @@
             }
         });
 
-        // 表格渲染函数（与历史页面的分页逻辑相同）
         function renderTable(page) {
             const start = (page - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
@@ -123,50 +124,61 @@
             `).join('');
         }
 
-        // 完全复制的历史页面分页生成逻辑
         function renderPagination() {
             const pages = [];
             const MAX_VISIBLE = 5;
             
-            // 生成页码范围（与历史页面完全相同）
+            // 生成页码逻辑
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 2);
-            
-            // 处理开始页码
-            if (currentPage < 3) {
-                endPage = Math.min(MAX_VISIBLE, totalPages);
-            } else if (currentPage > totalPages - 2) {
-                startPage = Math.max(1, totalPages - 4);
-            }
 
-            // 添加省略号逻辑
+            if (currentPage < 3) endPage = Math.min(5, totalPages);
+            if (currentPage > totalPages - 2) startPage = Math.max(1, totalPages - 4);
+
             if (startPage > 1) pages.push(1);
             if (startPage > 2) pages.push('...');
-            
-            // 构建可见页面
             for (let i = startPage; i <= endPage; i++) pages.push(i);
-            
-            // 添加尾部的...
             if (endPage < totalPages - 1) pages.push('...');
             if (endPage < totalPages) pages.push(totalPages);
 
-            // 生成分页HTML（与历史页面相同的结构）
+            // 生成完整分页控件
             const container = document.getElementById('pagination-controls');
-            container.innerHTML = pages.map(page => {
-                if (page === '...') return `<span class="ellipsis">...</span>`;
-                return `<a href="javascript:void(0)" 
-                          class="${page === currentPage ? 'active' : ''}" 
-                          data-page="${page}">${page}</a>`;
-            }).join('');
+            container.innerHTML = `
+                <a class="page-prev ${currentPage === 1 ? 'disabled' : ''}">&lt;</a>
+                ${pages.map(page => 
+                    page === '...' ? 
+                    `<span class="ellipsis">...</span>` : 
+                    `<a class="${page === currentPage ? 'active' : ''}" data-page="${page}">${page}</a>`
+                ).join('')}
+                <a class="page-next ${currentPage === totalPages ? 'disabled' : ''}">&gt;</a>
+            `;
 
-            // 添加点击事件（与历史页面相同的处理方式）
-            document.querySelectorAll('#pagination-controls a').forEach(link => {
+            // 事件绑定
+            document.querySelector('.page-prev').addEventListener('click', () => {
+                if(currentPage > 1) {
+                    currentPage--;
+                    updateView();
+                }
+            });
+
+            document.querySelector('.page-next').addEventListener('click', () => {
+                if(currentPage < totalPages) {
+                    currentPage++;
+                    updateView();
+                }
+            });
+
+            document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', () => {
                     currentPage = parseInt(link.dataset.page);
-                    renderTable(currentPage);
-                    renderPagination();
+                    updateView();
                 });
             });
+        }
+
+        function updateView() {
+            renderTable(currentPage);
+            renderPagination();
         }
     </script>
 </body>
