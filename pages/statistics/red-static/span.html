@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>红球跨度统计 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../../../../css/style.css">
+    <style>
+        /* 新增分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 4px;
+        }
+        .pagination a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .pagination a.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .pagination a:hover:not(.active) {
+            background: #f5f5f5;
+        }
+        .pagination span.ellipsis {
+            padding: 8px 6px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -19,7 +50,7 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 保持与sum.html相同的导航结构 -->
+                    <!-- 保持原有导航结构 -->
                 </div>
             </li>
             <li><a href="../../cold-numbers.html">冷门统计</a></li>
@@ -28,8 +59,9 @@
     </nav>
     
     <main id="stat-container">
-        <!-- 内容由JavaScript自动生成 -->
         <div class="loading">数据加载中...</div>
+        <!-- 新增分页容器 -->
+        <div class="pagination" id="pagination-controls"></div>
     </main>
 
     <footer>
@@ -38,15 +70,99 @@
 
     <script src="../../../../../js/statistics.js"></script>
     <script>
+        // 分页参数（与和值页面完全相同）
+        const ITEMS_PER_PAGE = 50;
+        let currentPage = 1;
+        let totalPages = 1;
+        let allData = [];
+
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const data = await loadCSVData();
-                const results = calculateRedStatic(data, 'span'); // 关键参数
-                renderStatisticsTable(results, '红球跨度统计');
+                // 加载所有数据
+                allData = await loadCSVData();
+                totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
+                
+                // 初始渲染
+                renderTable(currentPage);
+                renderPagination();
+
             } catch (error) {
-                document.querySelector('.loading').textContent = '数据加载失败，请刷新重试';
+                document.querySelector('.loading').textContent = '数据加载失败，请刷新页面';
+                console.error('加载错误:', error);
             }
         });
+
+        // 渲染表格（保持原有表格结构）
+        function renderTable(page) {
+            const start = (page - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const results = calculateRedStatic(allData.slice(start, end), 'span');
+            
+            const container = document.getElementById('stat-container');
+            container.innerHTML = `
+                <div class="card">
+                    <h3>红球跨度统计（第${page}页/共${totalPages}页）</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>期号</th>
+                                    <th>跨度值</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(item => `
+                                    <tr>
+                                        <td>${item.issue}</td>
+                                        <td>${item.value}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="pagination" id="pagination-controls"></div>
+            `;
+            
+            // 重新绑定分页事件
+            renderPagination();
+        }
+
+        // 分页生成逻辑（完全复用和值页面代码）
+        function renderPagination() {
+            const pages = [];
+            const MAX_VISIBLE = 5;
+            
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (currentPage < 3) {
+                endPage = Math.min(MAX_VISIBLE, totalPages);
+            } else if (currentPage > totalPages - 2) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+
+            if (startPage > 1) pages.push(1);
+            if (startPage > 2) pages.push('...');
+            for (let i = startPage; i <= endPage; i++) pages.push(i);
+            if (endPage < totalPages - 1) pages.push('...');
+            if (endPage < totalPages) pages.push(totalPages);
+
+            const container = document.getElementById('pagination-controls');
+            container.innerHTML = pages.map(page => {
+                if (page === '...') return `<span class="ellipsis">...</span>`;
+                return `<a href="javascript:void(0)" 
+                          class="${page === currentPage ? 'active' : ''}" 
+                          data-page="${page}">${page}</a>`;
+            }).join('');
+
+            document.querySelectorAll('#pagination-controls a').forEach(link => {
+                link.addEventListener('click', () => {
+                    currentPage = parseInt(link.dataset.page);
+                    renderTable(currentPage);
+                });
+            });
+        }
     </script>
 </body>
 </html>
