@@ -77,8 +77,10 @@ function calculateByType(balls, type) {
         case 'oddEven': // 奇偶比
             const odd = balls.filter(b => b % 2 !== 0).length;
             return `${odd}:${6 - odd}`;
-        case 'road012': // 012路
-            return balls.map(b => b % 3).join('');
+        case 'road012': // 012路（修改处）
+            const counts = [0, 0, 0];
+            balls.forEach(b => counts[b % 3]++);
+            return counts.join(':');  // 格式化为2:3:1形式
         case 'consecutive': // 连号组数
             const sorted = [...balls].sort((a, b) => a - b);
             let groups = 0;
