@@ -6,13 +6,34 @@
     <title>红球和值统计 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../../../../css/style.css">
     <style>
-        /* 新增分页样式（与历史页面一致） */
-        .pagination a.active {
-            background: #4CAF50 !important;
-            border-color: #4CAF50 !important;
+        /* 保持与历史页面相同的内联分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 4px;
         }
-        .table-container {
-            overflow-x: auto;
+        .pagination a {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .pagination a.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .pagination a:hover:not(.active) {
+            background: #f5f5f5;
+        }
+        .pagination span.ellipsis {
+            padding: 8px 6px;
+            color: #666;
         }
     </style>
 </head>
@@ -22,6 +43,7 @@
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
 
+    <!-- 保持原有导航结构 -->
     <nav>
         <ul>
             <li><a href="../../../../../index.html">返回主页</a></li>
@@ -29,7 +51,7 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 保持原有导航结构不变 -->
+                    <!-- 具体菜单内容保持不变 -->
                 </div>
             </li>
             <li><a href="../../cold-numbers.html">冷门统计</a></li>
@@ -37,10 +59,25 @@
         </ul>
     </nav>
 
-    <main id="stat-container">
-        <div class="loading">数据加载中...</div>
-        <!-- 新增分页控件（与历史页面相同结构） -->
-        <div class="pagination" id="pagination-controls"></div>
+    <main>
+        <div class="card">
+            <h3>红球和值统计</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>期号</th>
+                            <th>和值</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sum-data">
+                        <tr><td colspan="2" class="no-data">数据加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- 添加的分页控件（与历史页面一致） -->
+            <div class="pagination" id="pagination-controls"></div>
+        </div>
     </main>
 
     <footer>
@@ -49,7 +86,7 @@
 
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 配置分页参数（与历史页面一致）
+        // 完全复用历史页面的分页参数
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let totalPages = 1;
@@ -57,96 +94,72 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 加载所有数据
                 allData = await loadCSVData();
-                // 计算总页数
                 totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
                 
-                // 初始渲染
+                // 初始显示第一页
                 renderTable(currentPage);
                 renderPagination();
 
             } catch (error) {
-                document.querySelector('.loading').textContent = '数据加载失败，请刷新页面';
-                console.error('加载错误:', error);
+                document.getElementById('sum-data').innerHTML = 
+                    `<tr><td colspan="2">数据加载失败，请刷新页面</td></tr>`;
+                console.error(error);
             }
         });
 
-        // 渲染数据表格（带分页功能）
+        // 表格渲染函数（与历史页面的分页逻辑相同）
         function renderTable(page) {
             const start = (page - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
-            const pageData = allData.slice(start, end);
-            
-            // 计算和值
-            const results = calculateRedStatic(pageData, 'sum');
-            
-            // 生成表格HTML
-            const container = document.getElementById('stat-container');
-            container.innerHTML = `
-                <div class="card">
-                    <h3>红球和值统计（第${page}页/共${totalPages}页）</h3>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>期号</th>
-                                    <th>和值</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${results.map(item => `
-                                    <tr>
-                                        <td>${item.issue}</td>
-                                        <td>${item.value}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
+            const results = calculateRedStatic(allData.slice(start, end), 'sum');
+
+            const tbody = document.getElementById('sum-data');
+            tbody.innerHTML = results.map(item => `
+                <tr>
+                    <td>${item.issue}</td>
+                    <td>${item.value}</td>
+                </tr>
+            `).join('');
         }
 
-        // 生成分页控件（与历史页面相同逻辑）
+        // 完全复制的历史页面分页生成逻辑
         function renderPagination() {
-            const container = document.getElementById('pagination-controls');
             const pages = [];
-            const MAX_VISIBLE = 5;  // 最大可见页码数
-
-            // 计算页码范围
+            const MAX_VISIBLE = 5;
+            
+            // 生成页码范围（与历史页面完全相同）
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 2);
-
-            // 处理边界情况
+            
+            // 处理开始页码
             if (currentPage < 3) {
                 endPage = Math.min(MAX_VISIBLE, totalPages);
             } else if (currentPage > totalPages - 2) {
                 startPage = Math.max(1, totalPages - 4);
             }
 
-            // 生成页码数组
+            // 添加省略号逻辑
             if (startPage > 1) pages.push(1);
             if (startPage > 2) pages.push('...');
+            
+            // 构建可见页面
             for (let i = startPage; i <= endPage; i++) pages.push(i);
+            
+            // 添加尾部的...
             if (endPage < totalPages - 1) pages.push('...');
             if (endPage < totalPages) pages.push(totalPages);
 
-            // 生成分页HTML
+            // 生成分页HTML（与历史页面相同的结构）
+            const container = document.getElementById('pagination-controls');
             container.innerHTML = pages.map(page => {
-                if (page === '...') {
-                    return `<span class="ellipsis">...</span>`;
-                }
-                return `
-                    <a href="javascript:void(0);" 
-                       class="${page === currentPage ? 'active' : ''}" 
-                       data-page="${page}">
-                        ${page}
-                    </a>
-                `;
+                if (page === '...') return `<span class="ellipsis">...</span>`;
+                return `<a href="javascript:void(0)" 
+                          class="${page === currentPage ? 'active' : ''}" 
+                          data-page="${page}">${page}</a>`;
             }).join('');
 
-            // 添加点击事件
+            // 添加点击事件（与历史页面相同的处理方式）
             document.querySelectorAll('#pagination-controls a').forEach(link => {
                 link.addEventListener('click', () => {
                     currentPage = parseInt(link.dataset.page);
