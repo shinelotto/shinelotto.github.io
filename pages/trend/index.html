@@ -6,85 +6,93 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 修改点：调整第一列宽度 */
-    .data-table td {
-        width: 3px;
-        height: 25px;
-        font-size: 12px; /* 新增字体大小设置 */
-    }
-    /* 其他原有样式完全保持不变 */
-    .data-table th:first-child {
-        width: 25px !important;
-    }
-    .data-table td:first-child {
-        width: 25px !important;
-    }
-    .data-table th {
-        width: 4px;
-    }
-    body {
-        margin: 0;
-        padding: 20px;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: #f5f5f5;
-    }
-    .data-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-        overflow: hidden;
-        margin-top: 20px;
-    }
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-    .data-table th {
-        background: #e74c3c;
-        color: white;
-        padding: 12px;
-        font-weight: 500;
-        border-right: 1px solid rgba(255,255,255,0.3);
-        text-align: center;
-        vertical-align: middle;
-    }
-    .data-table td {
-        padding: 0;
-        border: 1px solid #eee;
-        text-align: center;
-        position: relative;
-        vertical-align: middle;
-    }
-    .ball {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
-        border-radius: 50%;
-        background: #e74c3c;
-        color: white;
-        font-size: 12px; /* 红球数字保持12px */
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-    }
-    .miss {
-        position: absolute;
-        bottom: 0;
-        right: 1px;
-        font-size: 8px; /* 遗漏值保持8px */
-        color: #95a5a6;
-        z-index: 1;
-    }
-    /* 其他样式全部保持不变... */
+        /* 新增：修复父列名显示 */
+        .parent-header {
+            background: #c0392b !important;
+            font-size: 14px;
+            padding: 8px !important;
+        }
+        /* 修改行背景色 */
+        .data-table tr {
+            background-color: transparent; /* 移除白色背景 */
+        }
+        .data-table td {
+            width: 3px;
+            height: 25px;
+            font-size: 12px;
+        }
+        .data-table th:first-child {
+            width: 25px !important;
+        }
+        .data-table td:first-child {
+            width: 25px !important;
+        }
+        .data-table th {
+            width: 4px;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .data-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .data-table th {
+            background: #e74c3c;
+            color: white;
+            padding: 12px;
+            font-weight: 500;
+            border-right: 1px solid rgba(255,255,255,0.3);
+            text-align: center;
+            vertical-align: middle;
+        }
+        .data-table td {
+            padding: 0;
+            border: 1px solid #eee;
+            text-align: center;
+            position: relative;
+            vertical-align: middle;
+        }
+        .ball {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .miss {
+            position: absolute;
+            bottom: 0;
+            right: 1px;
+            font-size: 8px;
+            color: #95a5a6;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
+    <!-- 头部和导航栏保持不变 -->
     <header>
         <h1>双色球基本走势图</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
@@ -109,18 +117,21 @@
         <div class="data-container">
             <table class="data-table">
                 <thead>
+                    <!-- 修复点：添加父列名 -->
                     <tr>
-                        <th style="width: 25px">期号</th>  <!-- 修改此处宽度 -->
-                        <script>
-                            document.write(Array.from({length:33}, (_,i) => 
-                                `<th>${(i+1).toString().padStart(2,'0')}</th>`
-                            ).join(''));
-                        </script>
-                        <script>
-                            document.write(Array.from({length:10}, (_,i) => 
-                                `<th>${i}</th>`
-                            ).join(''));
-                        </script>
+                        <th rowspan="2" style="width: 25px">期号</th>
+                        <th class="parent-header" colspan="11">一区</th>
+                        <th class="parent-header" colspan="11">二区</th>
+                        <th class="parent-header" colspan="11">三区</th>
+                        <th class="parent-header" colspan="10">尾数</th>
+                    </tr>
+                    <tr>
+                        ${Array.from({length:33}, (_,i) => 
+                            `<th>${(i+1).toString().padStart(2,'0')}</th>`
+                        ).join('')}
+                        ${Array.from({length:10}, (_,i) => 
+                            `<th>${i}</th>`
+                        ).join('')}
                     </tr>
                 </thead>
                 <tbody id="dataBody">
