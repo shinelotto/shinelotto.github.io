@@ -6,13 +6,12 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 修复版CSS */
-        body {
+       body {
             margin: 0;
-            padding: 20px;
+            padding: 20px 10px;  /* 减少左右边距 */
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f5f5f5;
-            min-width: 365px;
+            min-width: 860px;    /* 最小宽度适应表格 */
         }
 
         .data-container {
@@ -20,71 +19,89 @@
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
             margin-top: 20px;
-            overflow-x: auto;
+            overflow-x: visible; /* 移除横向滚动条 */
         }
 
         .data-table {
             width: auto;
-            min-width: 365px;
+            min-width: 860px;    /* 根据列宽计算的最小宽度 */
             border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        /* 表格边框设置 */
-        .parent-header {
-            border-left: 2px solid #666 !important;
-            border-right: 2px solid #666 !important;
-        }
-        .data-table td {
-            border: 1px solid #ddd;
-            background-color: #fff0f0;  /* 浅粉色背景 */
         }
 
         /* 列宽设置 */
         .data-table th:first-child,
         .data-table td:first-child {
-            width: 50px !important;
+            width: 50px !important;  /* 期号列 */
             min-width: 50px;
             max-width: 50px;
         }
 
-        .data-table th:not(:first-child) {
-            width: 3px !important;
-            min-width: 3px;
-            max-width: 3px;
+        .data-table th:not(:first-child):not([colspan]) {
+            width: 20px !important;  /* 红球列 */
+            min-width: 20px;
+            max-width: 20px;
         }
 
+        .parent-header[colspan="10"] ~ th {
+            width: 15px !important;  /* 尾数列 */
+            min-width: 15px;
+            max-width: 15px;
+        }
+
+        /* 表头样式 */
         .parent-header {
             background: #c0392b;
             color: white;
             padding: 8px;
             font-size: 14px;
             position: relative;
+            border-left: 2px solid #666;
+            border-right: 2px solid #666;
         }
 
-        /* 球样式 */
+        /* 球体样式优化 */
         .ball {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
-            border-radius: 80%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
             background: #e74c3c;
             color: white;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin: 1px auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .miss {
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 10px;
+            bottom: 1px;
+            right: 1px;
+            font-size: 9px;
             color: #95a5a6;
         }
 
-        /* 分页样式（与历史页保持一致） */
+        /* 表格边框优化 */
+        .data-table td {
+            position: relative;
+            height: 28px;
+            background-color: #fff0f0;
+        }
+
+        .data-table td:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ddd;
+            pointer-events: none;
+        }
+
+        /* 分页样式保持原样 */
         .pagination {
             padding: 15px;
             text-align: center;
@@ -97,12 +114,12 @@
             min-width: 32px;
             padding: 6px 12px;
             margin: 0 3px;
-            border: 1px solid #ddd border-radius: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             text-decoration: none;
             color: #333;
             background: #fff;
             transition: all 0.2s;
-            cursor: pointer;
         }
 
         .pagination a:hover {
