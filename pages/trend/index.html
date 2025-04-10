@@ -2,146 +2,141 @@
 <html>
 <head>
     <title>基本走势图</title>
-    <link rel="stylesheet" href="../../css/basic-trend.css">
     <style>
-        /* 优化后的样式 */
-        .trend-container {
-            padding: 15px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-radius: 4px;
+        /* 专业数据表格样式 */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
         }
 
-        /* 分页控件 */
-        .pagination {
-            margin: 15px 0;
-            gap: 3px;
-        }
-        .pagination a {
-            padding: 5px 12px;
-            border-color: #ddd;
-            color: #666;
-            font-size: 14px;
-        }
-        .pagination a:hover {
-            background: #f0f0f0;
-        }
-        .pagination a.active {
-            background: #e74c3c;
-            border-color: #c0392b;
+        .data-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        /* 表格样式 */
-        .trend-table {
-            font-size: 13px;
-            border: 1px solid #e8e8e8;
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
         }
-        .column-header {
-            background: #f8f8f8;
-            border-color: #e8e8e8;
+
+        .data-table th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
             font-weight: 500;
-            color: #333;
-        }
-        .parent-header {
-            background: #f0f0f0;
-            color: #2c3e50;
+            border-right: 1px solid #34495e;
         }
 
-        /* 号码单元格 */
-        .number-cell {
-            border-color: #eee;
+        .data-table td {
+            padding: 10px;
+            border: 1px solid #eee;
+            text-align: center;
             position: relative;
-            padding: 2px;
         }
-        .red-ball {
-            background: #e74c3c;
+
+        .ball {
+            display: inline-block;
             width: 26px;
             height: 26px;
             line-height: 26px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
             font-size: 13px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* 遗漏值 */
         .miss {
-            font-size: 9px;
-            color: #999;
-            right: 1px;
-            bottom: 1px;
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
+            color: #95a5a6;
         }
 
-        /* 期号列 */
-        .period-cell {
-            background: #f8f8f8;
-            color: #666;
-            font-weight: 500;
-        }
-
-        /* 滚动条 */
-        .scroll-container::-webkit-scrollbar {
-            height: 8px;
-            background: #f5f5f5;
-        }
-        .scroll-container::-webkit-scrollbar-thumb {
-            background: #ddd;
-            border-radius: 4px;
+        .pagination {
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
 <body>
-    <!-- 保持原有HTML结构不变 -->
-    <div class="trend-container">
-        <div class="pagination" id="paginationTop"></div>
-        <div class="scroll-container">
-            <table class="trend-table">
-                <thead>
-                    <tr>
-                        <th class="column-header period-cell">期号</th>
-                        <th class="column-header parent-header" colspan="11">一区</th>
-                        <th class="column-header parent-header" colspan="11">二区</th>
-                        <th class="column-header parent-header" colspan="11">三区</th>
-                        <th class="column-header parent-header" colspan="10">尾数</th>
-                    </tr>
-                    <tr>
-                        <th class="column-header period-cell"></th>
-                        <!-- 自动生成33个红球标题 -->
-                        ${Array.from({length:33}, (_,i) => 
-                            `<th class="column-header">${(i+1).toString().padStart(2,'0')}</th>`
-                        ).join('')}
-                        <!-- 尾数0-9 -->
-                        ${Array.from({length:10}, (_,i) => 
-                            `<th class="column-header">${i}</th>`
-                        ).join('')}
-                    </tr>
-                </thead>
-                <tbody id="dataBody"></tbody>
-            </table>
+    <div class="data-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px">期号</th>
+                    <!-- 红球列 -->
+                    <th colspan="11">一区（01-11）</th>
+                    <th colspan="11">二区（12-22）</th>
+                    <th colspan="11">三区（23-33）</th>
+                    <th colspan="10">尾数分布</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <!-- 生成33个红球列头 -->
+                    <script>
+                        document.write(Array.from({length:33}, (_,i) => 
+                            `<th>${(i+1).toString().padStart(2,'0')}</th>`
+                        ).join(''));
+                    </script>
+                    <!-- 尾数列头 -->
+                    <script>
+                        document.write(Array.from({length:10}, (_,i) => 
+                            `<th>${i}</th>`
+                        ).join(''));
+                    </script>
+                </tr>
+            </thead>
+            <tbody id="dataBody">
+                <!-- 示例数据行 -->
+                <tr>
+                    <td>2023089</td>
+                    <td><div class="ball">01<span class="miss">0</span></div></td>
+                    <td><span class="miss">5</span></td>
+                    <!-- ... 其他数据单元格 ... -->
+                </tr>
+            </tbody>
+        </table>
+        <div class="pagination">
+            当前显示 1-10 期，共 50 期
         </div>
-        <div class="pagination" id="paginationBottom"></div>
     </div>
 
     <script>
-        // 保持原有JavaScript不变，仅更新样式相关部分
-        // [原有JavaScript代码...]
-        
-        // 在createDataRow中更新球体样式
-        function createDataRow(data) {
-            // ...[原有代码]...
-            if(data.red.includes(num)) {
-                const ball = document.createElement('div');
-                ball.className = 'red-ball';
-                ball.innerHTML = `
-                    ${num.toString().padStart(2, '0')}
-                    <span class="miss">0</span>
-                `;
-                // 添加悬浮效果
-                ball.style.transition = 'transform 0.2s';
-                ball.onmouseenter = () => ball.style.transform = 'scale(1.1)';
-                ball.onmouseleave = () => ball.style.transform = 'scale(1)';
-                cell.appendChild(ball);
+        // 数据加载与渲染逻辑
+        async function loadData() {
+            try {
+                const response = await fetch('../../data/ssqhistory.csv');
+                const data = await response.text();
+                return data.split('\n')
+                    .slice(1)
+                    .map(line => {
+                        const [period, ...numbers] = line.split(',');
+                        return {
+                            period,
+                            red: numbers.slice(0,6).map(Number),
+                            blue: numbers[6]
+                        };
+                    });
+            } catch (error) {
+                console.error('数据加载失败:', error);
+                return [];
             }
-            // ...[剩余代码]...
         }
+
+        // 初始化页面
+        window.onload = async () => {
+            const data = await loadData();
+            console.log('成功加载数据:', data);
+            // 此处添加数据渲染逻辑
+        };
     </script>
 </body>
 </html>
