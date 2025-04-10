@@ -1,51 +1,60 @@
-/* 容器样式 */
+/* 添加全局重置 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 .trend-container {
     width: 100%;
     margin: 20px auto;
     font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-/* 表头样式 */
+/* 强制表头绝对居中 */
 .zone-header {
     display: flex;
-    background: #e74c3c; /* 修改为红色背景 */
+    background: #e74c3c; 
     color: white;
+    position: relative;
 }
 
 .zone-header-cell {
     padding: 12px;
     border-right: 1px solid rgba(255,255,255,0.2);
-    text-align: center;
-    vertical-align: middle;
-    flex: 1;
+    flex: 1 1 50px;  /* 增加弹性基准值 */
     min-width: 50px;
-    display: flex;
+    display: flex !important;  /* 强制覆盖可能存在的其他样式 */
     align-items: center;
     justify-content: center;
+    height: 100%;  /* 保证垂直填充 */
+    line-height: 1.5;  /* 增加行高 */
 }
 
-/* 数据行样式 */
+/* 数据行强制居中 */
 .data-row {
     display: flex;
     border-bottom: 1px solid #eee;
+    position: relative;
 }
 
 .period-cell, .number-cell {
     padding: 10px;
     border-right: 1px solid #eee;
-    flex: 1;
+    flex: 1 1 50px;
     min-width: 50px;
-    text-align: center;
-    vertical-align: middle;
-    position: relative;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    height: 40px;
+    height: 50px;  /* 固定高度保证垂直居中 */
 }
 
-/* 红球样式 */
+/* 增加绝对定位居中 */
 .red-ball {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: 26px;
     height: 26px;
     border-radius: 50%;
@@ -54,22 +63,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    margin: 0 auto;
 }
 
-/* 遗漏值样式 */
+/* 遗漏值定位修正 */
 .miss-count {
     position: absolute;
     bottom: 2px;
     right: 2px;
     font-size: 10px;
-    color: #95a5a6;
+    line-height: 1;
 }
 
-/* 特殊列样式 */
 .zone-parent {
-    background: #c0392b; /* 深红色强调 */
+    background: #c0392b;
     font-weight: bold;
     min-width: 80px;
+    z-index: 1;  /* 提升层级 */
 }
