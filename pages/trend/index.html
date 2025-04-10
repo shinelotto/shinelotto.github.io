@@ -6,7 +6,18 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 专业数据表格样式 */
+        /* 修改点1：列宽改为6px */
+        .data-table th {
+            width: 6px;  /* 原为9px */
+        }
+        .data-table td {
+            width: 6px;  /* 原为9px */
+        }
+        /* 修改点2：添加行背景色 */
+        .data-table tr {
+            background-color: white;
+        }
+        /* 其他样式保持不变 */
         body {
             margin: 0;
             padding: 20px;
@@ -36,7 +47,6 @@
             border-right: 1px solid rgba(255,255,255,0.3);
             text-align: center;
             vertical-align: middle;
-            width: 9px;  /* 列宽改为9 */
         }
 
         .data-table th:first-child {
@@ -50,7 +60,6 @@
             position: relative;
             vertical-align: middle;
             height: 20px;
-            width: 9px;  /* 列宽改为9 */
         }
 
         .ball {
@@ -62,13 +71,13 @@
             background: #e74c3c;
             color: white;
             font-size: 12px;
-            font-weight: bold;  /* 新增加粗 */
+            font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             position: absolute;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;  /* 确保数字居中 */
+            text-align: center;
         }
 
         .miss {
@@ -80,7 +89,6 @@
             z-index: 1;
         }
 
-        /* 分页样式 */
         .pagination {
             padding: 15px;
             text-align: center;
@@ -112,6 +120,7 @@
     </style>
 </head>
 <body>
+    <!-- 保持原有HTML结构不变 -->
     <header>
         <h1>双色球基本走势图</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
@@ -164,6 +173,7 @@
         <p>&copy; 2025 TXTX. All Rights Reserved.</p>
     </footer>
 
+    <!-- 保持原有JavaScript不变 -->
     <script>
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
