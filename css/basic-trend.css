@@ -1,4 +1,4 @@
-/* 添加全局重置 */
+/* 修复后的完整CSS */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,74 +9,83 @@
     width: 100%;
     margin: 20px auto;
     font-family: 'Segoe UI', Arial, sans-serif;
+    overflow-x: auto; /* 添加横向滚动 */
 }
 
-/* 强制表头绝对居中 */
-.zone-header {
-    display: flex;
-    background: #e74c3c; 
+/* 表格布局核心设置 */
+.data-table {
+    table-layout: fixed;
+    width: 197px; /* 25 + (4x33) + (4x10) */
+    border-collapse: collapse;
+}
+
+/* 期号列设置 */
+.period-column {
+    width: 25px !important;
+    min-width: 25px;
+    text-align: center;
+    vertical-align: middle;
+    background: #e74c3c;
     color: white;
+    padding: 8px;
+    border-right: 1px solid rgba(255,255,255,0.3);
+}
+
+/* 号码列基础设置 */
+.number-column {
+    width: 4px !important;
+    min-width: 4px;
+    height: 25px;
+    padding: 0;
+    border: 1px solid #eee;
     position: relative;
 }
 
-.zone-header-cell {
-    padding: 12px;
-    border-right: 1px solid rgba(255,255,255,0.2);
-    flex: 1 1 50px;  /* 增加弹性基准值 */
-    min-width: 50px;
-    display: flex !important;  /* 强制覆盖可能存在的其他样式 */
-    align-items: center;
-    justify-content: center;
-    height: 100%;  /* 保证垂直填充 */
-    line-height: 1.5;  /* 增加行高 */
+/* 父列头样式 */
+.zone-parent {
+    background: #c0392b;
+    color: white;
+    font-weight: bold;
+    padding: 8px;
+    text-align: center;
+    width: calc(4px * var(--colspan)); /* 动态计算宽度 */
 }
 
-/* 数据行强制居中 */
-.data-row {
-    display: flex;
-    border-bottom: 1px solid #eee;
-    position: relative;
-}
-
-.period-cell, .number-cell {
-    padding: 10px;
-    border-right: 1px solid #eee;
-    flex: 1 1 50px;
-    min-width: 50px;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    height: 50px;  /* 固定高度保证垂直居中 */
-}
-
-/* 增加绝对定位居中 */
+/* 红球样式 */
 .red-ball {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e74c3c;
+    color: white;
+    font-size: 12px;
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: #e74c3c;
-    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* 遗漏值定位修正 */
+/* 遗漏值样式 */
 .miss-count {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    font-size: 10px;
+    bottom: 1px;
+    right: 1px;
+    font-size: 8px;
+    color: #95a5a6;
     line-height: 1;
 }
 
-.zone-parent {
-    background: #c0392b;
-    font-weight: bold;
-    min-width: 80px;
-    z-index: 1;  /* 提升层级 */
+/* 表头特殊处理 */
+.zone-header {
+    background: #e74c3c;
+    color: white;
+}
+
+/* 数据行背景 */
+.data-row:nth-child(even) {
+    background: #f9f9f9;
 }
