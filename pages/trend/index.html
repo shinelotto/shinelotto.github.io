@@ -34,6 +34,8 @@
             padding: 12px;
             font-weight: 500;
             border-right: 1px solid #34495e;
+            text-align: center;  /* 新增居中 */
+            vertical-align: middle;  /* 新增垂直居中 */
         }
 
         .data-table td {
@@ -41,6 +43,7 @@
             border: 1px solid #eee;
             text-align: center;
             position: relative;
+            vertical-align: middle;  /* 新增垂直居中 */
         }
 
         .ball {
@@ -53,6 +56,7 @@
             color: white;
             font-size: 13px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            margin: 0 auto;  /* 新增居中 */
         }
 
         .miss {
@@ -124,9 +128,10 @@
                 <thead>
                     <tr>
                         <th style="width: 100px">期号</th>
-                        <th colspan="11">一区（01-11）</th>
-                        <th colspan="11">二区（12-22）</th>
-                        <th colspan="11">三区（23-33）</th>
+                        <!-- 修改点：删除括号内容 -->
+                        <th colspan="11">一区</th>
+                        <th colspan="11">二区</th>
+                        <th colspan="11">三区</th>
                         <th colspan="10">尾数分布</th>
                     </tr>
                     <tr>
