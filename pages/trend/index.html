@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>基本走势图</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基本走势图 - 双色球数据分析</title>
+    <link rel="stylesheet" href="../../css/style.css">
     <style>
         /* 专业数据表格样式 */
         body {
@@ -16,6 +19,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
             overflow: hidden;
+            margin-top: 20px;
         }
 
         .data-table {
@@ -67,50 +71,112 @@
     </style>
 </head>
 <body>
-    <div class="data-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 100px">期号</th>
-                    <!-- 红球列 -->
-                    <th colspan="11">一区（01-11）</th>
-                    <th colspan="11">二区（12-22）</th>
-                    <th colspan="11">三区（23-33）</th>
-                    <th colspan="10">尾数分布</th>
-                </tr>
-                <tr>
-                    <th></th>
-                    <!-- 生成33个红球列头 -->
-                    <script>
-                        document.write(Array.from({length:33}, (_,i) => 
-                            `<th>${(i+1).toString().padStart(2,'0')}</th>`
-                        ).join(''));
-                    </script>
-                    <!-- 尾数列头 -->
-                    <script>
-                        document.write(Array.from({length:10}, (_,i) => 
-                            `<th>${i}</th>`
-                        ).join(''));
-                    </script>
-                </tr>
-            </thead>
-            <tbody id="dataBody">
-                <!-- 示例数据行 -->
-                <tr>
-                    <td>2023089</td>
-                    <td><div class="ball">01<span class="miss">0</span></div></td>
-                    <td><span class="miss">5</span></td>
-                    <!-- ... 其他数据单元格 ... -->
-                </tr>
-            </tbody>
-        </table>
-        <div class="pagination">
-            当前显示 1-10 期，共 50 期
+    <header>
+        <h1>双色球基本走势图</h1>
+        <p>EASY TO BUY, EASY TO WIN</p>
+    </header>
+
+    <!-- 移植的导航菜单 -->
+    <nav>
+        <ul>
+            <li><a href="../../index.html">返回主页</a></li>
+            <li><a href="history.html">历史开奖</a></li>
+            <li class="dropdown">
+                <a href="javascript:void(0)" class="active">统计指标</a>
+                <div class="dropdown-content">
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">红球</a>
+                        <div class="dropdown-subcontent">
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">静态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="statistics/red-static/sum.html">和值</a>
+                                    <a href="statistics/red-static/span.html">跨度</a>
+                                    <a href="statistics/red-static/ac.html">AC值</a>
+                                    <a href="statistics/red-static/zone-ratio.html">区间比</a>
+                                    <a href="statistics/red-static/odd-even.html">奇偶比</a>
+                                    <a href="statistics/red-static/road012.html">012路</a>
+                                    <a href="statistics/red-static/size-ratio.html">大小比</a>
+                                    <a href="statistics/red-static/prime-composite.html">质合比</a>
+                                    <a href="statistics/red-static/consecutive.html">连号</a>
+                                    <a href="statistics/red-static/same-tail.html">同尾</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">动态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="statistics/red-dynamic/cold-hot.html">冷热比</a>
+                                    <a href="statistics/red-dynamic/repeat.html">重号</a>
+                                    <a href="statistics/red-dynamic/neighbor.html">邻号</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">蓝球</a>
+                        <div class="dropdown-subcontent">
+                            <a href="statistics/blue/zone4.html">四区</a>
+                            <a href="statistics/blue/size.html">大小</a>
+                            <a href="statistics/blue/odd-even.html">奇偶</a>
+                            <a href="statistics/blue/cold-hot.html">冷热</a>
+                            <a href="statistics/blue/amplitude.html">振幅</a>
+                            <a href="statistics/blue/tail.html">尾数</a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li><a href="/pages/trend/index.html" class="active">基本走势图</a></li>
+            <li><a href="cold-numbers.html">冷门统计</a></li>
+            <li><a href="prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
+
+    <!-- 基本走势图内容 -->
+    <main>
+        <div class="data-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 100px">期号</th>
+                        <th colspan="11">一区（01-11）</th>
+                        <th colspan="11">二区（12-22）</th>
+                        <th colspan="11">三区（23-33）</th>
+                        <th colspan="10">尾数分布</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <script>
+                            document.write(Array.from({length:33}, (_,i) => 
+                                `<th>${(i+1).toString().padStart(2,'0')}</th>`
+                            ).join(''));
+                        </script>
+                        <script>
+                            document.write(Array.from({length:10}, (_,i) => 
+                                `<th>${i}</th>`
+                            ).join(''));
+                        </script>
+                    </tr>
+                </thead>
+                <tbody id="dataBody">
+                    <tr>
+                        <td colspan="44" class="no-data">数据加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination" id="pagination-controls"></div>
         </div>
-    </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 TXTX. All Rights Reserved.</p>
+    </footer>
 
     <script>
-        // 数据加载与渲染逻辑
+        // 移植的分页功能
+        const ITEMS_PER_PAGE = 50;
+        let currentPage = 1;
+        let allData = [];
+
         async function loadData() {
             try {
                 const response = await fetch('../../data/ssqhistory.csv');
@@ -131,11 +197,65 @@
             }
         }
 
-        // 初始化页面
+        function renderPagination() {
+            const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
+            const pagination = document.getElementById('pagination-controls');
+            
+            let html = [];
+            if(currentPage > 1) {
+                html.push(`<a href="#" onclick="changePage(${currentPage - 1})">‹ 上一页</a>`);
+            }
+
+            for(let i = 1; i <= totalPages; i++) {
+                html.push(`<a href="#" onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</a>`);
+            }
+
+            if(currentPage < totalPages) {
+                html.push(`<a href="#" onclick="changePage(${currentPage + 1})">下一页 ›</a>`);
+            }
+
+            pagination.innerHTML = html.join('');
+        }
+
+        window.changePage = function(newPage) {
+            currentPage = newPage;
+            renderTable();
+            renderPagination();
+        }
+
+        function renderTable() {
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const tbody = document.getElementById('dataBody');
+            
+            tbody.innerHTML = allData.slice(start, end).map(data => `
+                <tr>
+                    <td>${data.period}</td>
+                    ${Array.from({length:33}, (_,i) => {
+                        const num = i + 1;
+                        return data.red.includes(num) ?
+                            `<td><div class="ball">${num.toString().padStart(2,'0')}<span class="miss">0</span></div></td>` :
+                            `<td><span class="miss">${calculateMiss(num)}</span></td>`
+                    }).join('')}
+                    ${Array.from({length:10}, t => 
+                        data.red.some(n => n%10 === t) ?
+                        `<td><div class="ball">${t}</div></td>` :
+                        `<td></td>`
+                    ).join('')}
+                </tr>
+            `).join('');
+        }
+
+        function calculateMiss(number) {
+            const lastAppear = allData.findIndex(d => d.red.includes(number));
+            return lastAppear === -1 ? allData.length : allData.length - lastAppear;
+        }
+
+        // 初始化
         window.onload = async () => {
-            const data = await loadData();
-            console.log('成功加载数据:', data);
-            // 此处添加数据渲染逻辑
+            allData = await loadData();
+            renderPagination();
+            renderTable();
         };
     </script>
 </body>
