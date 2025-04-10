@@ -1,4 +1,4 @@
-// 配置常量
+配置常量
 const ITEMS_PER_PAGE = 50; // 每页显示50期
 const DATA_PATH ='../../../../../data/ssqhistory.csv'; // 调整数据路径
 let currentPage = 1;
@@ -108,13 +108,16 @@ function renderTableData() {
         // 红球分布
         for(let num = 1; num <= 33; num++) {
             const isActive = data.red.includes(num);
-            const miss = calculateMissCount(num);
+            let miss;
+            if (data.period === '2003001') {
+                miss = isActive ? 0 : 1; // 首期特殊处理
+            } else {
+                miss = calculateMissCount(num);
+            }
             row.innerHTML += `
             <td class="number-cell">
                 ${isActive ? 
-                    `<div class="red-ball">${num.toString().padStart(2,'0')}
-                        <span class="miss">0</span>
-                    </div>` : 
+                    `<div class="red-ball">${num.toString().padStart(2,'0')}</div>` : // 移除0标记
                     `<span class="miss">${miss}</span>`}
             </td>`;
         }
@@ -122,10 +125,18 @@ function renderTableData() {
         // 尾数分布
         const tails = [...new Set(data.red.map(n => n % 10))];
         for(let t = 0; t <= 9; t++) {
+            const isTailActive = tails.includes(t);
+            let tailMiss;
+            if (data.period === '2003001') {
+                tailMiss = isTailActive ? 0 : 1; // 首期特殊处理
+            } else {
+                tailMiss = calculateTailMissCount(t);
+            }
             row.innerHTML += `
             <td class="number-cell">
-                ${tails.includes(t) ? 
-                    `<div class="red-ball">${t}</div>` : ''}
+                ${isTailActive ? 
+                    `<div class="red-ball">${t}</div>` : 
+                    `<span class="miss">${tailMiss}</span>`}
             </td>`;
         }
         
@@ -133,9 +144,17 @@ function renderTableData() {
     });
 }
 
-// 遗漏值计算优化
+// 遗漏值计算优化（红球）
 function calculateMissCount(number) {
     const lastAppearIndex = allData.findIndex(d => d.red.includes(number));
+    return lastAppearIndex === -1 ? allData.length : allData.length - lastAppearIndex;
+}
+
+// 新增尾数遗漏计算
+function calculateTailMissCount(tail) {
+    const lastAppearIndex = allData.findIndex(d => 
+        [...new Set(d.red.map(n => n % 10))].includes(tail)
+    );
     return lastAppearIndex === -1 ? allData.length : allData.length - lastAppearIndex;
 }
 
