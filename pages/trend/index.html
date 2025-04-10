@@ -6,26 +6,33 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 新增父列样式 */
+        /* 新增修复样式 */
         .parent-header {
             background: #c0392b;
             font-size: 14px;
             padding: 8px 0;
-            min-width: 44px;  /* 11列x4px=44px */
+            width: calc(4px * 11); /* 动态计算列宽 */
+            min-width: 44px;
         }
-        .data-table td {
-            width: 3px;
-            height: 25px;
-            font-size: 12px;
+        .data-container {
+            overflow-x: auto; /* 添加横向滚动 */
         }
+        .data-table {
+            width: calc(25px + (4px * 33) + (4px * 10)); /* 期号25 + 红球132 + 尾数40 = 197px */
+        }
+        .data-table th:not(:first-child) {
+            width: 4px !important;
+            min-width: 4px !important;
+        }
+        .data-table td:not(:first-child) {
+            width: 4px !important;
+        }
+        /* 原有样式保持 */
         .data-table th:first-child {
             width: 25px !important;
         }
         .data-table td:first-child {
             width: 25px !important;
-        }
-        .data-table th {
-            width: 4px;
         }
         body {
             margin: 0;
@@ -37,11 +44,9 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            overflow: hidden;
             margin-top: 20px;
         }
         .data-table {
-            width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
         }
@@ -55,6 +60,8 @@
             vertical-align: middle;
         }
         .data-table td {
+            height: 25px;
+            font-size: 12px;
             padding: 0;
             border: 1px solid #eee;
             text-align: center;
@@ -86,6 +93,34 @@
             color: #95a5a6;
             z-index: 1;
         }
+        .pagination {
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        .pagination a {
+            display: inline-block;
+            min-width: 32px;
+            padding: 6px 12px;
+            margin: 0 3px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            background: #fff;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .pagination a:hover {
+            background: #f8f8f8;
+            transform: translateY(-1px);
+        }
+        .pagination a.active {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -113,21 +148,25 @@
         <div class="data-container">
             <table class="data-table">
                 <thead>
-                    <!-- 修复点：添加父列结构 -->
                     <tr>
-                        <th rowspan="2" style="width: 25px">期号</th>
+                        <th rowspan="2" style="width:25px">期号</th>
                         <th class="parent-header" colspan="11">一区</th>
                         <th class="parent-header" colspan="11">二区</th>
                         <th class="parent-header" colspan="11">三区</th>
-                        <th class="parent-header" colspan="10">尾数</th>
+                        <th class="parent-header" colspan="10" style="width:40px">尾数</th>
                     </tr>
                     <tr>
-                        ${Array.from({length:33}, (_,i) => 
-                            `<th>${(i+1).toString().padStart(2,'0')}</th>`
-                        ).join('')}
-                        ${Array.from({length:10}, (_,i) => 
-                            `<th>${i}</th>`
-                        ).join('')}
+                        <script>
+                            // 动态生成时添加精确宽度
+                            document.write(Array.from({length:33}, (_,i) => 
+                                `<th style="width:4px;min-width:4px">${(i+1).toString().padStart(2,'0')}</th>`
+                            ).join(''));
+                        </script>
+                        <script>
+                            document.write(Array.from({length:10}, (_,i) => 
+                                `<th style="width:4px;min-width:4px">${i}</th>`
+                            ).join(''));
+                        </script>
                     </tr>
                 </thead>
                 <tbody id="dataBody">
