@@ -17,7 +17,7 @@ function parseCSV(csvText) {
     return rows.map(row => {
         const [期号, 红球1, 红球2, 红球3, 红球4, 红球5, 红球6, 蓝球] = row.split(',');
         return {
-            期号: 期号.trim(),
+            期号: 期号.trim()|| '',
             红球1: parseInt(红球1),
             红球2: parseInt(红球2),
             红球3: parseInt(红球3),
@@ -26,7 +26,8 @@ function parseCSV(csvText) {
             红球6: parseInt(红球6),
             蓝球: parseInt(蓝球)
         };
-    });
+    })
+    .filter(item => item.期号 && item.期号 !== '');
 }
 
 // ================== 通用工具函数 ==================
