@@ -1,6 +1,6 @@
 配置常量
 const ITEMS_PER_PAGE = 50; // 每页显示50期
-const DATA_PATH ='../../../../../data/ssqhistory.csv'; // 调整数据路径
+const DATA_PATH ='../../../../../data/ssqhistory.csv'; 
 let currentPage = 1;
 let allData = [];
 
@@ -8,10 +8,9 @@ let allData = [];
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('走势图初始化开始');
     try {
-        // 加载并初始化数据
+        // 加载数据并保持原始顺序
         allData = await loadCSVData();
         console.log(`成功加载${allData.length}期数据`);
-        allData = allData.reverse();
         
         // 创建表格结构
         createTableHeader();
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// 创建表格头部（优化版）
+// 创建表格头部（保持不变）
 function createTableHeader() {
     const container = document.getElementById('trendContainer');
     const zones = [
@@ -37,7 +36,6 @@ function createTableHeader() {
         { name: '尾数', cols: 10 }
     ];
 
-    // 生成表头HTML
     const headerHTML = `
     <table class="trend-table">
         <thead>
@@ -63,7 +61,7 @@ function createTableHeader() {
     container.innerHTML = headerHTML;
 }
 
-// 数据加载优化版
+// 数据加载（保持原始顺序）
 async function loadCSVData() {
     try {
         const response = await fetch(DATA_PATH);
@@ -71,7 +69,7 @@ async function loadCSVData() {
         
         const csvText = await response.text();
         return csvText.split('\n')
-            .slice(1) // 跳过标题行
+            .slice(1)
             .filter(line => line.trim().length > 0)
             .map(line => {
                 const [period, ...balls] = line.split(',');
@@ -87,20 +85,14 @@ async function loadCSVData() {
     }
 }
 
-// 分页数据获取
-function getPaginatedData() {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return allData.slice(start, end);
-}
-
-// 表格渲染优化
+// 表格渲染（核心修改）
 function renderTableData() {
     const tbody = document.getElementById('dataBody');
     tbody.innerHTML = '';
     
-    getPaginatedData().forEach(data => {
+    getPaginatedData().forEach((data, dataIndex) => {
         const row = document.createElement('tr');
+        const currentIndex = (currentPage - 1) * ITEMS_PER_PAGE + dataIndex;
         
         // 期号列
         row.innerHTML = `<td class="period-cell">${data.period}</td>`;
@@ -112,12 +104,12 @@ function renderTableData() {
             if (data.period === '2003001') {
                 miss = isActive ? 0 : 1; // 首期特殊处理
             } else {
-                miss = calculateMissCount(num);
+                miss = calculateMissCount(num, currentIndex);
             }
             row.innerHTML += `
             <td class="number-cell">
                 ${isActive ? 
-                    `<div class="red-ball">${num.toString().padStart(2,'0')}</div>` : // 移除0标记
+                    `<div class="red-ball">${num.toString().padStart(2,'0')}</div>` : 
                     `<span class="miss">${miss}</span>`}
             </td>`;
         }
@@ -130,7 +122,7 @@ function renderTableData() {
             if (data.period === '2003001') {
                 tailMiss = isTailActive ? 0 : 1; // 首期特殊处理
             } else {
-                tailMiss = calculateTailMissCount(t);
+                tailMiss = calculateTailMissCount(t, currentIndex);
             }
             row.innerHTML += `
             <td class="number-cell">
@@ -144,21 +136,36 @@ function renderTableData() {
     });
 }
 
-// 遗漏值计算优化（红球）
-function calculateMissCount(number) {
-    const lastAppearIndex = allData.findIndex(d => d.red.includes(number));
-    return lastAppearIndex === -1 ? allData.length : allData.length - lastAppearIndex;
+// 新的遗漏计算逻辑
+function calculateMissCount(number, currentIndex) {
+    // 从当前期往后查找
+    const subsequentData = allData.slice(currentIndex + 1);
+    const lastAppearIndex = subsequentData.findIndex(d => d.red.includes(number));
+    
+    return lastAppearIndex === -1 ? 
+        allData.length - currentIndex : 
+        lastAppearIndex + 1;
 }
 
-// 新增尾数遗漏计算
-function calculateTailMissCount(tail) {
-    const lastAppearIndex = allData.findIndex(d => 
+function calculateTailMissCount(tail, currentIndex) {
+    // 从当前期往后查找
+    const subsequentData = allData.slice(currentIndex + 1);
+    const lastAppearIndex = subsequentData.findIndex(d => 
         [...new Set(d.red.map(n => n % 10))].includes(tail)
     );
-    return lastAppearIndex === -1 ? allData.length : allData.length - lastAppearIndex;
+    
+    return lastAppearIndex === -1 ? 
+        allData.length - currentIndex : 
+        lastAppearIndex + 1;
 }
 
-// 分页控件生成
+// 以下保持原有分页功能不变
+function getPaginatedData() {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return allData.slice(start, end);
+}
+
 function renderPagination() {
     const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
     const paginationContainer = document.getElementById('pagination');
@@ -185,7 +192,6 @@ function renderPagination() {
     paginationContainer.innerHTML = buttons.join('');
 }
 
-// 全局换页函数
 window.changePage = function(newPage) {
     if(newPage < 1 || newPage > Math.ceil(allData.length / ITEMS_PER_PAGE)) return;
     
