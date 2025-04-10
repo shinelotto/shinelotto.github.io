@@ -6,44 +6,52 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-       body {
+        /* 2023.11.15 居中优化版 */
+        body {
             margin: 0;
-            padding: 20px 10px;  /* 减少左右边距 */
+            padding: 20px 10px;
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f5f5f5;
-            min-width: 860px;    /* 最小宽度适应表格 */
+            min-width: 860px;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
         }
 
         .data-container {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            margin-top: 20px;
-            overflow-x: visible; /* 移除横向滚动条 */
+            margin: 20px auto;  /* 关键居中属性 */
+            overflow-x: visible;
+            max-width: calc(100% - 40px);
         }
 
         .data-table {
             width: auto;
-            min-width: 860px;    /* 根据列宽计算的最小宽度 */
+            min-width: 860px;
             border-collapse: collapse;
         }
 
         /* 列宽设置 */
         .data-table th:first-child,
         .data-table td:first-child {
-            width: 50px !important;  /* 期号列 */
+            width: 50px !important;
             min-width: 50px;
             max-width: 50px;
         }
 
         .data-table th:not(:first-child):not([colspan]) {
-            width: 20px !important;  /* 红球列 */
+            width: 20px !important;
             min-width: 20px;
             max-width: 20px;
         }
 
         .parent-header[colspan="10"] ~ th {
-            width: 15px !important;  /* 尾数列 */
+            width: 15px !important;
             min-width: 15px;
             max-width: 15px;
         }
@@ -59,7 +67,7 @@
             border-right: 2px solid #666;
         }
 
-        /* 球体样式优化 */
+        /* 球体样式 */
         .ball {
             display: flex;
             align-items: center;
@@ -83,7 +91,7 @@
             color: #95a5a6;
         }
 
-        /* 表格边框优化 */
+        /* 表格边框 */
         .data-table td {
             position: relative;
             height: 28px;
@@ -101,7 +109,7 @@
             pointer-events: none;
         }
 
-        /* 分页样式保持原样 */
+        /* 分页样式 */
         .pagination {
             padding: 15px;
             text-align: center;
@@ -135,7 +143,7 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏（与历史页相同） -->
+    <!-- 导航栏 -->
     <header>
         <h1>双色球基本走势图</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
@@ -155,6 +163,7 @@
         </ul>
     </nav>
 
+    <!-- 核心内容区 -->
     <main>
         <div class="data-container">
             <table class="data-table">
@@ -168,6 +177,7 @@
                     </tr>
                     <tr>
                         <script>
+                            // 自动生成列标题
                             document.write(Array.from({length:33}, (_,i) => 
                                 `<th>${(i+1).toString().padStart(2,'0')}</th>`
                             ).join(''));
@@ -187,13 +197,13 @@
         </div>
     </main>
 
-    <!-- 版权信息（与历史页相同） -->
+    <!-- 页脚 -->
     <footer>
         <p>&copy; 2025 TXTX. All Rights Reserved.</p>
     </footer>
 
     <script>
-        // 原有JavaScript代码保持不变
+        // 数据加载逻辑（保持原样）
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let allData = [];
@@ -218,6 +228,7 @@
             }
         }
 
+        // 分页和渲染逻辑（保持原样）
         function renderPagination() {
             const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
             const pagination = document.getElementById('pagination-controls');
@@ -279,6 +290,7 @@
             return lastAppear === -1 ? allData.length : allData.length - lastAppear;
         }
 
+        // 初始化加载
         window.onload = async () => {
             allData = await loadData();
             renderPagination();
