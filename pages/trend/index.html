@@ -6,17 +6,21 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 修改点：调整列宽 */
-        .data-table th {
-            width: 4px;  /* 其他列宽改为4px */
-        }
-        .data-table td {
-            width: 4px;  /* 其他列宽改为4px */
-        }
+        /* 修改点：调整第一列宽度 */
         .data-table th:first-child {
-            width: 20px !important;  /* 第一列保持20px */
+            width: 25px !important;  /* 第一列改为25px */
+        }
+        .data-table td:first-child {
+            width: 25px !important;
         }
         /* 其他样式保持不变 */
+        .data-table th {
+            width: 4px;
+        }
+        .data-table td {
+            width: 4px;
+            height: 18px;
+        }
         body {
             margin: 0;
             padding: 20px;
@@ -50,7 +54,6 @@
             text-align: center;
             position: relative;
             vertical-align: middle;
-            height: 18px;
         }
         .ball {
             display: inline-block;
@@ -136,7 +139,7 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width: 20px">期号</th>
+                        <th style="width: 25px">期号</th>  <!-- 修改此处宽度 -->
                         <script>
                             document.write(Array.from({length:33}, (_,i) => 
                                 `<th>${(i+1).toString().padStart(2,'0')}</th>`
