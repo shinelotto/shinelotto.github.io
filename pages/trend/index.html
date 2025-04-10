@@ -6,99 +6,80 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 新增修复样式 */
-        .parent-header {
-            background: #c0392b;
-            font-size: 14px;
-            padding: 8px 0;
-            width: calc(4px * 11); /* 动态计算列宽 */
-            min-width: 44px;
-        }
-        .data-container {
-            overflow-x: auto; /* 添加横向滚动 */
-        }
-        .data-table {
-            width: calc(25px + (4px * 33) + (4px * 10)); /* 期号25 + 红球132 + 尾数40 = 197px */
-        }
-        .data-table th:not(:first-child) {
-            width: 4px !important;
-            min-width: 4px !important;
-        }
-        .data-table td:not(:first-child) {
-            width: 4px !important;
-        }
-        /* 原有样式保持 */
-        .data-table th:first-child {
-            width: 25px !important;
-        }
-        .data-table td:first-child {
-            width: 25px !important;
-        }
+        /* 修复版CSS */
         body {
             margin: 0;
             padding: 20px;
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f5f5f5;
         }
+
         .data-container {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
             margin-top: 20px;
+            overflow-x: auto;
         }
+
         .data-table {
+            width: auto;
+            min-width: 1275px; /* 25 + (35x33) + (35x10) */
             border-collapse: collapse;
             table-layout: fixed;
         }
-        .data-table th {
-            background: #e74c3c;
+
+        /* 列宽设置 */
+        .data-table th:first-child,
+        .data-table td:first-child {
+            width: 50px !important; /* 期号列加宽 */
+            min-width: 50px;
+            max-width: 50px;
+        }
+
+        .data-table th:not(:first-child) {
+            width: 35px !important; /* 正常号码列宽 */
+            min-width: 35px;
+            max-width: 35px;
+        }
+
+        .parent-header {
+            background: #c0392b;
             color: white;
-            padding: 12px;
-            font-weight: 500;
-            border-right: 1px solid rgba(255,255,255,0.3);
-            text-align: center;
-            vertical-align: middle;
+            padding: 8px;
+            font-size: 14px;
         }
-        .data-table td {
-            height: 25px;
-            font-size: 12px;
-            padding: 0;
-            border: 1px solid #eee;
-            text-align: center;
-            position: relative;
-            vertical-align: middle;
-        }
+
+        /* 球样式 */
         .ball {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
             border-radius: 50%;
             background: #e74c3c;
             color: white;
             font-size: 12px;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
         }
+
         .miss {
             position: absolute;
-            bottom: 0;
-            right: 1px;
-            font-size: 8px;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
             color: #95a5a6;
-            z-index: 1;
         }
+
+        /* 分页样式 */
         .pagination {
             padding: 15px;
             text-align: center;
             background: #f8f9fa;
             border-top: 1px solid #eee;
         }
+
         .pagination a {
             display: inline-block;
             min-width: 32px;
@@ -112,10 +93,12 @@
             transition: all 0.2s;
             cursor: pointer;
         }
+
         .pagination a:hover {
             background: #f8f8f8;
             transform: translateY(-1px);
         }
+
         .pagination a.active {
             background: #e74c3c;
             color: white;
@@ -135,8 +118,7 @@
             <li><a href="history.html">历史开奖</a></li>
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
-                <div class="dropdown-content">
-                </div>
+                <div class="dropdown-content"></div>
             </li>
             <li><a href="/pages/trend/index.html" class="active">基本走势图</a></li>
             <li><a href="cold-numbers.html">冷门统计</a></li>
@@ -149,22 +131,22 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th rowspan="2" style="width:25px">期号</th>
+                        <th rowspan="2">期号</th>
                         <th class="parent-header" colspan="11">一区</th>
                         <th class="parent-header" colspan="11">二区</th>
                         <th class="parent-header" colspan="11">三区</th>
-                        <th class="parent-header" colspan="10" style="width:40px">尾数</th>
+                        <th class="parent-header" colspan="10">尾数</th>
                     </tr>
                     <tr>
                         <script>
-                            // 动态生成时添加精确宽度
+                            // 生成红球列
                             document.write(Array.from({length:33}, (_,i) => 
-                                `<th style="width:4px;min-width:4px">${(i+1).toString().padStart(2,'0')}</th>`
+                                `<th>${(i+1).toString().padStart(2,'0')}</th>`
                             ).join(''));
-                        </script>
-                        <script>
+                            
+                            // 生成尾数列
                             document.write(Array.from({length:10}, (_,i) => 
-                                `<th style="width:4px;min-width:4px">${i}</th>`
+                                `<th>${i}</th>`
                             ).join(''));
                         </script>
                     </tr>
@@ -252,7 +234,7 @@
                     ${Array.from({length:33}, (_,i) => {
                         const num = i + 1;
                         return data.red.includes(num) ?
-                            `<td><div class="ball">${num.toString().padStart(2,'0')}<span class="miss">0</span></div></td>` :
+                            `<td><div class="ball">${num.toString().padStart(2,'0')}</div><span class="miss">0</span></td>` :
                             `<td><span class="miss">${calculateMiss(num)}</span></td>`
                     }).join('')}
                     ${Array.from({length:10}, t => 
