@@ -6,15 +6,12 @@
     <title>基本走势图 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../css/style.css">
     <style>
-        /* 新增：修复父列名显示 */
+        /* 新增父列样式 */
         .parent-header {
-            background: #c0392b !important;
+            background: #c0392b;
             font-size: 14px;
-            padding: 8px !important;
-        }
-        /* 修改行背景色 */
-        .data-table tr {
-            background-color: transparent; /* 移除白色背景 */
+            padding: 8px 0;
+            min-width: 44px;  /* 11列x4px=44px */
         }
         .data-table td {
             width: 3px;
@@ -92,7 +89,6 @@
     </style>
 </head>
 <body>
-    <!-- 头部和导航栏保持不变 -->
     <header>
         <h1>双色球基本走势图</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
@@ -117,7 +113,7 @@
         <div class="data-container">
             <table class="data-table">
                 <thead>
-                    <!-- 修复点：添加父列名 -->
+                    <!-- 修复点：添加父列结构 -->
                     <tr>
                         <th rowspan="2" style="width: 25px">期号</th>
                         <th class="parent-header" colspan="11">一区</th>
