@@ -29,50 +29,56 @@
         }
 
         .data-table th {
-            background: #e74c3c; /* 已改为红色 */
+            background: #e74c3c;
             color: white;
             padding: 12px;
             font-weight: 500;
             border-right: 1px solid rgba(255,255,255,0.3);
             text-align: center;
             vertical-align: middle;
+            width: 12px;  /* 新增列宽设置 */
+        }
+
+        .data-table th:first-child {
+            width: 100px !important;  /* 保持期号列宽度 */
         }
 
         .data-table td {
-            padding: 10px;
+            padding: 0;  /* 修改为0 */
             border: 1px solid #eee;
             text-align: center;
             position: relative;
             vertical-align: middle;
-            height: 50px;  /* 固定高度保证垂直居中 */
+            height: 20px;  /* 行高改为20 */
+            width: 12px;  /* 新增列宽设置 */
         }
 
         .ball {
             display: inline-block;
-            width: 26px;
-            height: 26px;
-            line-height: 26px;
+            width: 20px;  /* 修改为20 */
+            height: 20px;  /* 修改为20 */
+            line-height: 20px;  /* 行高改为20 */
             border-radius: 50%;
             background: #e74c3c;
             color: white;
-            font-size: 13px;
+            font-size: 10px;  /* 缩小字体 */
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            position: absolute;  /* 绝对定位 */
-            left: 50%;  /* 水平居中 */
-            top: 50%;   /* 垂直居中 */
-            transform: translate(-50%, -50%);  /* 精确居中 */
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .miss {
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 10px;
+            bottom: 0;  /* 调整位置 */
+            right: 1px;
+            font-size: 8px;  /* 缩小字体 */
             color: #95a5a6;
-            z-index: 1;  /* 确保显示在球上方 */
+            z-index: 1;
         }
 
-        /* 移植的分页样式 */
+        /* 分页样式 */
         .pagination {
             padding: 15px;
             text-align: center;
@@ -109,7 +115,6 @@
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
 
-    <!-- 移植的导航菜单 -->
     <nav>
         <ul>
             <li><a href="../../index.html">返回主页</a></li>
@@ -117,7 +122,6 @@
             <li class="dropdown">
                 <a href="javascript:void(0)" class="active">统计指标</a>
                 <div class="dropdown-content">
-                    <!-- 保持原有下拉菜单结构 -->
                 </div>
             </li>
             <li><a href="/pages/trend/index.html" class="active">基本走势图</a></li>
@@ -126,20 +130,12 @@
         </ul>
     </nav>
 
-    <!-- 基本走势图内容 -->
     <main>
         <div class="data-container">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th style="width: 100px">期号</th>
-                        <th colspan="11">一区</th>
-                        <th colspan="11">二区</th>
-                        <th colspan="11">三区</th>
-                        <th colspan="10">尾数分布</th>
-                    </tr>
-                    <tr>
-                        <th></th>
                         <script>
                             document.write(Array.from({length:33}, (_,i) => 
                                 `<th>${(i+1).toString().padStart(2,'0')}</th>`
@@ -167,7 +163,6 @@
     </footer>
 
     <script>
-        // 移植的分页功能
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let allData = [];
@@ -253,7 +248,6 @@
             return lastAppear === -1 ? allData.length : allData.length - lastAppear;
         }
 
-        // 初始化
         window.onload = async () => {
             allData = await loadData();
             renderPagination();
