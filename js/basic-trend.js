@@ -1,119 +1,156 @@
-// 主功能模块
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('走势图页面已加载');
-    initBasicTrend();
-});
+// 配置常量
+const ITEMS_PER_PAGE = 50; // 每页显示50期
+let currentPage = 1;
+let allData = [];
 
-// 初始化走势图
-async function initBasicTrend() {
+// 主功能模块
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('走势图页面已加载');
     try {
-        const data = await loadCSVData();
-        createRedDistribution(data);
-        createTailDistribution(data);
+        // 加载并初始化数据
+        allData = await loadCSVData();
+        allData = allData.reverse(); // 倒序显示最新数据在前
+        
+        // 初始化页面
+        createTableHeader();
+        renderPagination();
+        renderTableData();
     } catch (error) {
         console.error('初始化失败:', error);
     }
+});
+
+// 创建表格头部
+function createTableHeader() {
+    const container = document.getElementById('trendContainer');
+    
+    // 清空容器
+    container.innerHTML = `
+        <table class="trend-table">
+            <thead>
+                <tr>
+                    <th class="column-header period-cell">期号</th>
+                    <th class="column-header parent-header" colspan="11">一区</th>
+                    <th class="column-header parent-header" colspan="11">二区</th>
+                    <th class="column-header parent-header" colspan="11">三区</th>
+                    <th class="column-header parent-header" colspan="10">尾数</th>
+                </tr>
+                <tr>
+                    <th class="column-header period-cell"></th>
+                    ${Array.from({length: 33}, (_, i) => 
+                        `<th class="column-header">${(i+1).toString().padStart(2, '0')}</th>`
+                    ).join('')}
+                    ${Array.from({length: 10}, (_, i) => 
+                        `<th class="column-header">${i}</th>`
+                    ).join('')}
+                </tr>
+            </thead>
+            <tbody id="dataBody"></tbody>
+        </table>
+    `;
 }
 
-// 红球分布处理（新增功能）
-function createRedDistribution(data) {
-    // 三区定义
-    const zones = [
-        { id: 'zone1', start: 1, end: 11, title: '一区（01-11）' },
-        { id: 'zone2', start: 12, end: 22, title: '二区（12-22）' },
-        { id: 'zone3', start: 23, end: 33, title: '三区（23-33）' }
-    ];
-
-    zones.forEach(zone => {
-        const container = document.createElement('div');
-        container.className = 'zone-container';
+// 渲染表格数据
+function renderTableData() {
+    const tbody = document.getElementById('dataBody');
+    tbody.innerHTML = '';
+    
+    // 获取当前页数据
+    const { paginatedData } = paginateData(allData, currentPage, ITEMS_PER_PAGE);
+    
+    // 生成每期数据行
+    paginatedData.forEach(data => {
+        const row = document.createElement('tr');
         
-        // 添加区标题
-        const title = document.createElement('h4');
-        title.textContent = zone.title;
-        container.appendChild(title);
-
-        // 创建号码网格
-        const grid = document.createElement('div');
-        grid.className = 'number-grid';
+        // 期号单元格
+        const periodCell = document.createElement('td');
+        periodCell.className = 'period-cell';
+        periodCell.textContent = data.period;
+        row.appendChild(periodCell);
         
-        // 生成每个号码单元格
-        for (let num = zone.start; num <= zone.end; num++) {
-            const cell = createNumberCell(num, data);
-            grid.appendChild(cell);
+        // 生成33个红球单元格
+        for(let num = 1; num <= 33; num++) {
+            const cell = document.createElement('td');
+            cell.className = 'number-cell';
+            
+            // 计算遗漏值
+            const lastAppearIndex = allData.findIndex(d => d.red.includes(num));
+            const missCount = lastAppearIndex === -1 ? allData.length : allData.length - lastAppearIndex;
+            
+            if(data.red.includes(num)) {
+                const ball = document.createElement('div');
+                ball.className = 'red-ball';
+                ball.innerHTML = `
+                    ${num.toString().padStart(2, '0')}
+                    <span class="miss">0</span>
+                `;
+                cell.appendChild(ball);
+            } else {
+                cell.innerHTML = `<span class="miss">${missCount}</span>`;
+            }
+            row.appendChild(cell);
         }
         
-        container.appendChild(grid);
-        document.getElementById('redNumberGrid').appendChild(container);
+        // 生成尾数单元格
+        const tails = data.red.map(n => n % 10);
+        for(let t = 0; t <= 9; t++) {
+            const cell = document.createElement('td');
+            cell.className = 'number-cell';
+            if(tails.includes(t)) {
+                cell.innerHTML = `<div class="red-ball">${t}</div>`;
+            }
+            row.appendChild(cell);
+        }
+        
+        tbody.appendChild(row);
     });
 }
 
-// 尾数分布处理（新增功能）
-function createTailDistribution(data) {
-    const tailGrid = document.getElementById('tailNumberGrid');
+// 分页功能
+function paginateData(data, page, itemsPerPage) {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return {
+        paginatedData: data.slice(startIndex, endIndex),
+        totalPages: Math.ceil(data.length / itemsPerPage)
+    };
+}
+
+// 渲染分页控件
+function renderPagination() {
+    const { totalPages } = paginateData(allData, currentPage, ITEMS_PER_PAGE);
+    const container = document.getElementById('pagination');
     
-    // 生成0-9尾数
-    for (let tail = 0; tail <= 9; tail++) {
-        const cell = document.createElement('div');
-        cell.className = 'tail-cell';
-        
-        // 计算该尾数的遗漏值
-        const lastAppear = data.findLastIndex(d => 
-            d.red.some(num => num % 10 === tail)
+    let html = [];
+    if(currentPage > 1) {
+        html.push(`<a href="#" onclick="changePage(${currentPage - 1})">« 上一页</a>`);
+    }
+    
+    for(let i = 1; i <= totalPages; i++) {
+        html.push(
+            `<a href="#" onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</a>`
         );
-        const missCount = lastAppear === -1 ? data.length : data.length - lastAppear;
-
-        // 显示尾数
-        const label = document.createElement('div');
-        label.className = 'tail-label';
-        label.textContent = tail;
-        cell.appendChild(label);
-
-        // 显示遗漏值
-        const miss = document.createElement('div');
-        miss.className = 'miss-count' + (missCount > 10 ? ' cold' : '');
-        miss.textContent = missCount;
-        cell.appendChild(miss);
-
-        tailGrid.appendChild(cell);
     }
-}
-
-// 创建数字单元格（新增功能）
-function createNumberCell(num, data) {
-    const cell = document.createElement('div');
-    cell.className = 'number-cell';
     
-    // 数字显示
-    const number = document.createElement('div');
-    number.className = 'number';
-    number.textContent = num.toString().padStart(2, '0');
-    cell.appendChild(number);
-
-    // 计算遗漏值
-    const lastAppear = data.findLastIndex(d => d.red.includes(num));
-    const missCount = lastAppear === -1 ? data.length : data.length - lastAppear;
-
-    // 遗漏值显示
-    const miss = document.createElement('div');
-    miss.className = 'miss-count' + (missCount > 10 ? ' cold' : '');
-    miss.textContent = missCount;
-    cell.appendChild(miss);
-
-    // 标记最新出现的号码
-    if (missCount === 0) {
-        cell.classList.add('latest');
+    if(currentPage < totalPages) {
+        html.push(`<a href="#" onclick="changePage(${currentPage + 1})">下一页 »</a>`);
     }
-
-    return cell;
+    
+    container.innerHTML = html.join('');
 }
 
-// 以下保留main.js的通用结构 ============================
+// 换页函数 (需要在全局作用域)
+window.changePage = function(newPage) {
+    currentPage = newPage;
+    renderTableData();
+    renderPagination();
+    window.scrollTo(0, 0);
+}
 
-// 加载CSV数据（保持与main.js一致）
+// 数据加载函数 (保持与main.js一致)
 async function loadCSVData() {
     try {
-        const response = await fetch('../data/ssqhistory.csv');
+        const response = await fetch('../../data/ssqhistory.csv');
         const csvData = await response.text();
         return parseCSV(csvData);
     } catch (error) {
@@ -122,48 +159,16 @@ async function loadCSVData() {
     }
 }
 
-// 解析CSV（保持与main.js一致）
+// CSV解析函数 (优化版)
 function parseCSV(csvText) {
-    const lines = csvText.split('\n');
-    const headers = lines[0].split(',');
-    const result = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i]) continue;
-        
-        const obj = {};
-        const currentLine = lines[i].split(',');
-        
-        for (let j = 0; j < headers.length; j++) {
-            const key = headers[j].trim();
-            obj[key] = currentLine[j] ? currentLine[j].trim() : '';
-            
-            // 转换红球号码为数组
-            if (key.startsWith('red')) {
-                obj.red = [currentLine[1], currentLine[2], currentLine[3], 
-                          currentLine[4], currentLine[5], currentLine[6]].map(Number);
-            }
-        }
-        
-        result.push(obj);
-    }
-    
-    return result;
-}
-
-// 分页功能（保留结构但禁用）
-function paginateData(data, page, itemsPerPage) {
-    // 走势图不需要分页，但保留结构
-    return { paginatedData: data, totalPages: 1 };
-}
-
-// 分页控件（保留结构但隐藏）
-function renderPagination() {
-    // 走势图不需要分页，但保留函数结构
-}
-
-// 更新页面（保持与main.js一致）
-function updatePage(page) {
-    console.log('更新到页面:', page);
-    // 实际使用时需要重新渲染数据
+    return csvText.split('\n')
+        .slice(1) // 跳过标题行
+        .filter(line => line.trim()) // 过滤空行
+        .map(line => {
+            const [period, red1, red2, red3, red4, red5, red6] = line.split(',');
+            return {
+                period: period.trim(),
+                red: [red1, red2, red3, red4, red5, red6].map(Number)
+            };
+        });
 }

@@ -4,149 +4,229 @@
     <title>基本走势图</title>
     <link rel="stylesheet" href="../../css/basic-trend.css">
     <style>
-        /* 精确匹配示意图的样式 */
-        .period-grid {
-            display: grid;
-            grid-template-columns: repeat(11, 40px);
-            gap: 1px;
-            margin-bottom: 15px;
-        }
-        
-        .number-cell {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #e0e0e0;
-            position: relative;
+        /* 新增分页样式 */
+        .pagination {
+            margin: 20px 0;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
+            gap: 5px;
+            flex-wrap: wrap;
         }
-        
-        .red-ball {
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            background: #fff;
+            transition: all 0.3s;
+        }
+        .pagination a:hover {
+            background: #f8f8f8;
+        }
+        .pagination a.active {
             background: #e74c3c;
             color: white;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-color: #e74c3c;
         }
-        
-        .miss-count {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 10px;
-            color: #666;
-            transform: scale(0.8);
+
+        /* 表格滚动容器 */
+        .scroll-container {
+            overflow-x: auto;
+            margin: 20px 0;
         }
-        
-        .zone-title {
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 10px 0;
-            padding-left: 5px;
+
+        /* 原有样式保持不变 */
+        .trend-table {
+            width: auto;
+            border-collapse: collapse;
         }
-        
-        .trend-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .column-header {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 8px;
+            min-width: 40px;
+            position: sticky;
+            left: 0;
+            z-index: 2;
         }
+        /* ... 其他原有样式 ... */
     </style>
 </head>
 <body>
     <div class="trend-container">
-        <!-- 红球分布 -->
-        <div class="number-distribution">
-            <h3>红球号码分布</h3>
-            
-            <!-- 一区 -->
-            <div class="zone-title">一区（01-11）</div>
-            <div class="period-grid" id="zone1"></div>
-            
-            <!-- 二区 -->
-            <div class="zone-title">二区（12-22）</div>
-            <div class="period-grid" id="zone2"></div>
-            
-            <!-- 三区 -->
-            <div class="zone-title">三区（23-33）</div>
-            <div class="period-grid" id="zone3"></div>
+        <!-- 分页控件 -->
+        <div class="pagination" id="paginationTop"></div>
+        
+        <!-- 表格滚动容器 -->
+        <div class="scroll-container">
+            <table class="trend-table">
+                <!-- 表头结构保持不变 -->
+                <thead>
+                    <tr>
+                        <th class="column-header period-cell">期号</th>
+                        <!-- 各区标题... -->
+                    </tr>
+                    <tr>
+                        <th class="column-header period-cell"></th>
+                        <!-- 各号码标题... -->
+                    </tr>
+                </thead>
+                
+                <!-- 数据行 -->
+                <tbody id="dataBody"></tbody>
+            </table>
         </div>
 
-        <!-- 尾数分布 -->
-        <div class="tail-distribution">
-            <h3>尾数分布（0-9）</h3>
-            <div class="period-grid" id="tailGrid"></div>
-        </div>
+        <!-- 底部分页控件 -->
+        <div class="pagination" id="paginationBottom"></div>
     </div>
 
     <script>
-        // 模拟示意图数据（需替换为真实数据加载逻辑）
-        const mockData = {
-            zones: {
-                1: [
-                    [1,2,4,5,6,7,8,8,1,11],
-                    [12,13,14,15,15,17,17,19,20,21,22],
-                    [23,24,25,26,27,28,28,29,30,30,31,32,33]
-                ],
-                2: [
-                    [1,23,7,4,3,15,1,6,4,2,3],
-                    [1,24,5,1,29,6,6,10,4,6,13],
-                    [16,1,21,22,3,1,25,2,4,4,1]
-                ],
-                3: [
-                    [7,11,2,2,5,11,3,22,3,30,33],
-                    [2,9,11,1,20,6,6,3,30,9,13],
-                    [1,13,3,2,4,5,1,8,1,6,1]
-                ]
-            },
-            tails: [
-                [0,1,3,4,5,6,7,8,9],
-                [0,2,3,5,6,7,8,9],
-                [0,1,2,3,4,5,6,9]
-            ]
-        };
+        // 配置参数
+        const ITEMS_PER_PAGE = 10; // 每页显示10期
+        let currentPage = 1;
+        let allData = [];
 
-        // 生成号码分布
-        function createGrid(containerId, numbers) {
-            const container = document.getElementById(containerId);
-            numbers.forEach(num => {
-                const cell = document.createElement('div');
-                cell.className = 'number-cell';
-                cell.textContent = num.toString().padStart(2, '0');
-                
-                // 添加遗漏值逻辑（示例数据）
-                const miss = Math.floor(Math.random() * 10) + 1;
-                if(miss === 1) {
-                    cell.classList.add('red-ball');
-                } else {
-                    const missSpan = document.createElement('span');
-                    missSpan.className = 'miss-count';
-                    missSpan.textContent = miss;
-                    cell.appendChild(missSpan);
-                }
-                
-                container.appendChild(cell);
-            });
+        // 加载CSV数据
+        async function loadData() {
+            try {
+                const response = await fetch('../../data/ssqhistory.csv');
+                const csvText = await response.text();
+                return parseCSV(csvText);
+            } catch (error) {
+                console.error('数据加载失败:', error);
+                return [];
+            }
         }
 
-        // 初始化布局
-        window.onload = () => {
-            // 生成三个区
-            createGrid('zone1', mockData.zones[1].flat());
-            createGrid('zone2', mockData.zones[2].flat());
-            createGrid('zone3', mockData.zones[3].flat());
+        // 解析CSV数据
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').slice(1); // 跳过标题行
+            return lines.filter(line => line).map(line => {
+                const [period, red1, red2, red3, red4, red5, red6, blue] = line.split(',');
+                return {
+                    period: period.trim(),
+                    red: [red1, red2, red3, red4, red5, red6].map(Number)
+                };
+            }).reverse(); // 倒序显示最新数据在前
+        }
+
+        // 生成数据行
+        function createDataRow(data) {
+            const row = document.createElement('tr');
             
-            // 生成尾数分布
-            const tailGrid = document.getElementById('tailGrid');
-            mockData.tails.flat().forEach(t => {
-                const cell = document.createElement('div');
+            // 期号单元格
+            const periodCell = document.createElement('td');
+            periodCell.className = 'period-cell';
+            periodCell.textContent = data.period;
+            row.appendChild(periodCell);
+
+            // 生成33个红球单元格
+            for(let num = 1; num <= 33; num++){
+                const cell = document.createElement('td');
                 cell.className = 'number-cell';
-                cell.textContent = t;
-                cell.style.backgroundColor = '#f0f0f0';
-                tailGrid.appendChild(cell);
-            });
+                
+                // 计算遗漏值
+                const lastAppearIndex = allData.findIndex(d => d.red.includes(num));
+                const missCount = lastAppearIndex === -1 ? allData.length : allData.length - lastAppearIndex;
+
+                if(data.red.includes(num)) {
+                    const ball = document.createElement('div');
+                    ball.className = 'red-ball';
+                    ball.textContent = num.toString().padStart(2, '0');
+                    
+                    const miss = document.createElement('span');
+                    miss.className = 'miss';
+                    miss.textContent = '0';
+                    ball.appendChild(miss);
+                    
+                    cell.appendChild(ball);
+                } else {
+                    const miss = document.createElement('span');
+                    miss.className = 'miss';
+                    miss.textContent = missCount;
+                    cell.appendChild(miss);
+                }
+                
+                row.appendChild(cell);
+            }
+
+            // 生成尾数单元格
+            const tails = data.red.map(n => n % 10);
+            for(let t = 0; t <= 9; t++){
+                const cell = document.createElement('td');
+                cell.className = 'number-cell';
+                
+                if(tails.includes(t)) {
+                    const ball = document.createElement('div');
+                    ball.className = 'red-ball';
+                    ball.textContent = t;
+                    cell.appendChild(ball);
+                }
+                
+                row.appendChild(cell);
+            }
+
+            return row;
+        }
+
+        // 渲染表格
+        function renderTable(pageData) {
+            const tbody = document.getElementById('dataBody');
+            tbody.innerHTML = '';
+            pageData.forEach(data => tbody.appendChild(createDataRow(data)));
+        }
+
+        // 渲染分页控件
+        function renderPagination(totalPages) {
+            const paginationHtml = [];
+            
+            // 上一页
+            if(currentPage > 1) {
+                paginationHtml.push(`<a href="#" onclick="changePage(${currentPage - 1})">‹</a>`);
+            }
+
+            // 页码
+            for(let i = 1; i <= totalPages; i++) {
+                paginationHtml.push(
+                    `<a href="#" onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</a>`
+                );
+            }
+
+            // 下一页
+            if(currentPage < totalPages) {
+                paginationHtml.push(`<a href="#" onclick="changePage(${currentPage + 1})">›</a>`);
+            }
+
+            document.getElementById('paginationTop').innerHTML = paginationHtml.join('');
+            document.getElementById('paginationBottom').innerHTML = paginationHtml.join('');
+        }
+
+        // 换页函数
+        window.changePage = function(newPage) {
+            currentPage = newPage;
+            const { paginatedData, totalPages } = paginateData(allData, currentPage, ITEMS_PER_PAGE);
+            renderTable(paginatedData);
+            renderPagination(totalPages);
+            window.scrollTo(0, 0);
+        }
+
+        // 分页处理（从main.js中复用）
+        function paginateData(data, page, itemsPerPage) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            return {
+                paginatedData: data.slice(startIndex, endIndex),
+                totalPages: Math.ceil(data.length / itemsPerPage)
+            };
+        }
+
+        // 初始化
+        window.onload = async () => {
+            allData = await loadData();
+            const { paginatedData, totalPages } = paginateData(allData, currentPage, ITEMS_PER_PAGE);
+            renderTable(paginatedData);
+            renderPagination(totalPages);
         };
     </script>
 </body>

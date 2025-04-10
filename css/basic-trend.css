@@ -1,71 +1,31 @@
-.trend-container {
-    display: flex;
-    padding: 20px;
-    gap: 20px;
-    font-family: Arial, sans-serif;
-}
-
-/* 红球分布样式 */
-.number-distribution {
-    flex: 2;
-    border-right: 2px solid #ddd;
-    padding-right: 20px;
-}
-
-/* 尾数分布样式 */
-.tail-distribution {
-    flex: 1;
-}
-
-.grid-container {
-    display: grid;
-    gap: 2px;
-    margin-top: 10px;
-}
-
-/* 红球三区布局 */
-.red-number-grid {
-    display: grid;
-    grid-template-columns: repeat(11, 40px);
-    gap: 2px;
-}
-
-/* 尾数布局 */
-.tail-grid {
-    display: grid;
-    grid-template-columns: repeat(10, 40px);
-    gap: 2px;
-}
-
-.number-cell {
-    width: 40px;
-    height: 40px;
-    border: 1px solid #ddd;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 红球号码样式 */
-.red-ball {
-    background: #e84a45;
-    color: white;
-    border-radius: 50%;
-}
-
-/* 遗漏值样式 */
-.miss {
-    position: absolute;
-    bottom: 1px;
-    right: 1px;
-    font-size: 10px;
-    color: #666;
-}
-
-/* 区标题样式 */
-.zone-title {
-    color: #333;
-    margin: 15px 0;
-    font-size: 16px;
-}
+<div class="trend-container">
+    <!-- 列标题 -->
+    <div class="zone-header">
+        <div class="zone-header-cell">期号</div>
+        <div class="zone-header-cell zone-parent">一区</div>
+        <div class="zone-header-cell">01</div>
+        <div class="zone-header-cell">02</div>
+        <!-- ... 01~11号 ... -->
+        <div class="zone-header-cell zone-parent">二区</div>
+        <div class="zone-header-cell">12</div>
+        <div class="zone-header-cell">13</div>
+        <!-- ... 12~22号 ... -->
+        <div class="zone-header-cell zone-parent">三区</div>
+        <div class="zone-header-cell">23</div>
+        <div class="zone-header-cell">24</div>
+        <!-- ... 23~33号 ... -->
+        <div class="zone-header-cell zone-parent">尾数</div>
+        <div class="zone-header-cell">0</div>
+        <div class="zone-header-cell">1</div>
+        <!-- ... 0~9号 ... -->
+    </div>
+    
+    <!-- 数据行示例 -->
+    <div class="data-row">
+        <div class="period-cell">2023089</div>
+        <!-- 一区号码 -->
+        <div class="number-cell red-ball">01<span class="miss-count">0</span></div>
+        <div class="number-cell"><span class="miss-count">5</span></div>
+        <!-- ... 其他号码 ... -->
+    </div>
+</div>
