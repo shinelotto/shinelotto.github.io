@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蓝球振幅统计 - 双色球数据分析</title>
+    <title>红球大小比统计 - 双色球数据分析</title>
     <link rel="stylesheet" href="../../../../../css/style.css">
     <style>
         .pagination {
@@ -43,7 +43,7 @@
 </head>
 <body>
     <header>
-        <h1>蓝球振幅分析</h1>
+        <h1>红球大小比分析</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
 
@@ -58,18 +58,18 @@
                         <a href="javascript:void(0)">红球</a>
                         <div class="dropdown-subcontent">
                             <div class="dropdown-submenu">
-                                <a href="javascript:void(0)">静态指标</a>
+                                <a href="javascript:void(0)" class="active">静态指标</a>
                                 <div class="dropdown-subcontent">
-                                    <a href="../red-static/sum.html">和值</a>
-                                    <a href="../red-static/span.html">跨度</a>
-                                    <a href="../red-static/ac.html">AC值</a>
-                                    <a href="../red-static/zone-ratio.html">区间比</a>
-                                    <a href="../red-static/odd-even.html">奇偶比</a>
-                                    <a href="../red-static/road012.html">012路</a>
+                                    <a href="sum.html">和值</a>
+                                    <a href="span.html">跨度</a>
+                                    <a href="ac.html">AC值</a>
+                                    <a href="zone-ratio.html">区间比</a>
+                                    <a href="odd-even.html">奇偶比</a>
+                                    <a href="road012.html">012路</a>
                                     <a href="size-ratio.html" class="active">大小比</a>
                                     <a href="prime-composite.html" class="active">质合比</a>
-                                    <a href="../red-static/consecutive.html">连号</a>
-                                    <a href="../red-static/same-tail.html">同尾</a>
+                                    <a href="consecutive.html">连号</a>
+                                    <a href="same-tail.html">同尾</a>
                                 </div>
                             </div>
                             <div class="dropdown-submenu">
@@ -83,14 +83,14 @@
                         </div>
                     </div>
                     <div class="dropdown-submenu">
-                        <a href="javascript:void(0)" class="active">蓝球</a>
+                        <a href="javascript:void(0)">蓝球</a>
                         <div class="dropdown-subcontent">
-                            <a href="zone4.html">四区</a>
-                            <a href="size.html">大小</a>
-                            <a href="odd-even.html">奇偶</a>
-                            <a href="cold-hot.html">冷热</a>
-                            <a href="amplitude.html" class="active">振幅</a>
-                            <a href="tail.html">尾数</a>
+                            <a href="../../statistics/blue/zone4.html">四区</a>
+                            <a href="../../statistics/blue/size.html">大小</a>
+                            <a href="../../statistics/blue/odd-even.html">奇偶</a>
+                            <a href="../../statistics/blue/cold-hot.html">冷热</a>
+                            <a href="../../statistics/blue/amplitude.html">振幅</a>
+                            <a href="../../statistics/blue/tail.html">尾数</a>
                         </div>
                     </div>
                 </div>
@@ -102,16 +102,16 @@
 
     <main>
         <div class="card">
-            <h3>蓝球振幅统计</h3>
+            <h3>红球大小比统计</h3>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>期号</th>
-                            <th>振幅值</th>
+                            <th>大小比</th>
                         </tr>
                     </thead>
-                    <tbody id="amplitude-data">
+                    <tbody id="size-data">
                         <tr><td colspan="2" class="no-data">数据加载中...</td></tr>
                     </tbody>
                 </table>
@@ -129,7 +129,6 @@
 
     <script src="../../../../../js/statistics.js"></script>
     <script>
-        // 分页配置（与zone4.html完全一致）
         const ITEMS_PER_PAGE = 50;
         let currentPage = 1;
         let totalPages = 1;
@@ -142,7 +141,7 @@
                 renderTable(currentPage);
                 renderPagination();
             } catch (error) {
-                document.getElementById('amplitude-data').innerHTML = 
+                document.getElementById('size-data').innerHTML = 
                     `<tr><td colspan="2">数据加载失败，请刷新页面</td></tr>`;
                 console.error(error);
             }
@@ -151,9 +150,9 @@
         function renderTable(page) {
             const start = (page - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
-            const results = calculateBlue(allData.slice(start, end), 'amplitude');
+            const results = calculateRedStatic(allData.slice(start, end), 'sizeRatio');
 
-            const tbody = document.getElementById('amplitude-data');
+            const tbody = document.getElementById('size-data');
             tbody.innerHTML = results.map(item => `
                 <tr>
                     <td>${item.issue}</td>
@@ -192,26 +191,26 @@
             document.querySelector('.page-prev').addEventListener('click', () => {
                 if(currentPage > 1) {
                     currentPage--;
-                    updatePagination();
+                    updateView();
                 }
             });
 
             document.querySelector('.page-next').addEventListener('click', () => {
                 if(currentPage < totalPages) {
                     currentPage++;
-                    updatePagination();
+                    updateView();
                 }
             });
 
             document.querySelectorAll('[data-page]').forEach(link => {
                 link.addEventListener('click', () => {
                     currentPage = parseInt(link.dataset.page);
-                    updatePagination();
+                    updateView();
                 });
             });
         }
 
-        function updatePagination() {
+        function updateView() {
             renderTable(currentPage);
             renderPagination();
         }

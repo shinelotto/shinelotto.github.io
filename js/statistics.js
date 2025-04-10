@@ -1,7 +1,6 @@
 // ================== 新增数据加载函数 ==================
 async function loadCSVData() {
     try {
-        // 修正后的CSV路径（根据项目结构调整）
         const response = await fetch('../../../../../data/ssqhistory.csv');
         if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
         const csvText = await response.text();
@@ -14,7 +13,7 @@ async function loadCSVData() {
 
 // ================== CSV解析函数 ==================
 function parseCSV(csvText) {
-    const rows = csvText.split('\n').slice(1); // 跳过标题行
+    const rows = csvText.split('\n').slice(1);
     return rows.map(row => {
         const [期号, 红球1, 红球2, 红球3, 红球4, 红球5, 红球6, 蓝球] = row.split(',');
         return {
@@ -33,15 +32,10 @@ function parseCSV(csvText) {
 // ================== 通用工具函数 ==================
 const ZONE_DEFINITIONS = {
     red: [
-        { min: 1, max: 11 },    // 一区
-        { min: 12, max: 22 },   // 二区
-        { min: 23, max: 33 }    // 三区
+        { min: 1, max: 11 }, { min: 12, max: 22 }, { min: 23, max: 33 }
     ],
     blue: [
-        { min: 1, max: 4 },     // 一区
-        { min: 5, max: 8 },     // 二区
-        { min: 9, max: 12 },    // 三区
-        { min: 13, max: 16 }    // 四区
+        { min: 1, max: 4 }, { min: 5, max: 8 }, { min: 9, max: 12 }, { min: 13, max: 16 }
     ]
 };
 
@@ -58,49 +52,64 @@ function calculateRedStatic(data, type) {
 
 function calculateByType(balls, type) {
     switch(type) {
-        case 'sum':     // 和值
+        case 'sum':
             return balls.reduce((a, b) => a + b, 0);
-        case 'span':    // 跨度
+        case 'span':
             return Math.max(...balls) - Math.min(...balls);
-        case 'ac':      // AC值
+        case 'ac': {
             const diffs = new Set();
             for(let i = 0; i < balls.length; i++) {
                 for(let j = i+1; j < balls.length; j++) {
                     diffs.add(Math.abs(balls[i] - balls[j]));
                 }
             }
-            return diffs.size - (6 - 1);
-        case 'zone':    // 区间比
+            return diffs.size - 5;
+        }
+        case 'zone':
             return ZONE_DEFINITIONS.red.map(z => 
                 balls.filter(b => b >= z.min && b <= z.max).length
             ).join(':');
-        case 'oddEven': // 奇偶比
+        case 'oddEven': {
             const odd = balls.filter(b => b % 2 !== 0).length;
             return `${odd}:${6 - odd}`;
-        case 'road012': // 012路（修改处）
+        }
+        case 'road012': {
             const counts = [0, 0, 0];
             balls.forEach(b => counts[b % 3]++);
-            return counts.join(':');  // 格式化为2:3:1形式
-        case 'consecutive': // 连号组数
+            return counts.join(':');
+        }
+        case 'primeComposite': {
+            // 新增质合比计算
+            const primes = new Set([1,2,3,5,7,11,13,17,19,23,29,31]);
+            const primeCount = balls.filter(b => primes.has(b)).length;
+            return `${primeCount}:${6 - primeCount}`;
+        }
+        case 'sizeRatio': {
+            // 新增大小比计算
+            const bigCount = balls.filter(b => b > 16).length;
+            return `${bigCount}:${6 - bigCount}`;
+        }
+        case 'consecutive': {
             const sorted = [...balls].sort((a, b) => a - b);
             let groups = 0;
             for(let i = 0; i < sorted.length - 1; ) {
                 let count = 1;
-                while(i + count < sorted.length && 
-                     sorted[i + count] === sorted[i] + count) {
+                while(i + count < sorted.length && sorted[i + count] === sorted[i] + count) {
                     count++;
                 }
                 if(count > 1) groups++;
                 i += count;
             }
             return groups;
-        case 'sameTail': // 同尾号
+        }
+        case 'sameTail': {
             const tails = new Map();
             balls.forEach(b => {
                 const t = b % 10;
                 tails.set(t, (tails.get(t) || 0) + 1);
             });
             return [...tails.values()].filter(c => c > 1).length;
+        }
     }
 }
 
