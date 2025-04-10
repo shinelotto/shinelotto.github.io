@@ -1,6 +1,6 @@
 // 配置常量
 const ITEMS_PER_PAGE = 50; // 每页显示50期
-const DATA_PATH = '../data/ssqhistory.csv'; // 调整数据路径
+const DATA_PATH ='../../../../../data/ssqhistory.csv'; // 调整数据路径
 let currentPage = 1;
 let allData = [];
 
