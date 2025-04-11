@@ -1,26 +1,25 @@
 /* ================= 导航栏及顶部样式 ================= */
 body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    color: #333;
-    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;  /* 覆盖走势图的margin:20px auto */
+    padding: 0 !important;
+    color: #333 !important;
+    background-color: #f5f5f5 !important;
 }
 
 header {
-    background: #e74c3c;
-    color: white;
-    padding: 1rem 0;
-    text-align: center;
+    background: #e74c3c !important;
+    color: white !important;
+    padding: 1rem 0 !important;
+    text-align: center !important;
+    display: block !important;  /* 防止被其他样式隐藏 */
 }
 
-header h1 {
-    margin: 0;
-}
 
 nav {
-    background: #c0392b;
+    background: #c0392b !important;
+    display: block !important;
 }
 
 nav ul {
