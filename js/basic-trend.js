@@ -1,16 +1,18 @@
-let csvData = null;
+// basic-trend.js
 
-// 页面加载时自动获取数据
-window.onload = function() {
-    fetchCSVData();
-};
+document.addEventListener('DOMContentLoaded', function() {
+    // 页面加载完成后自动加载数据
+    loadCSVData();
+});
 
-// 从服务器获取CSV数据
-function fetchCSVData() {
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('error').textContent = '';
+function loadCSVData() {
+    const loadingElement = document.getElementById('loading');
+    const errorElement = document.getElementById('error');
     
-    // 使用相对路径访问数据文件
+    loadingElement.style.display = 'block';
+    errorElement.textContent = '';
+    
+    // 使用fetch API获取CSV文件
     fetch('../data/ssqhistory.csv')
         .then(response => {
             if (!response.ok) {
@@ -18,43 +20,22 @@ function fetchCSVData() {
             }
             return response.text();
         })
-        .then(text => {
-            csvData = text;
-            document.getElementById('loading').style.display = 'none'; 
-        })
-        .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('error').textContent = '加载数据失败: ' + error.message;
-            console.error('加载数据出错:', error);
-        });
-}
-
-function processData() {
-    if (!csvData) {
-        document.getElementById('error').textContent = '数据尚未加载完成，请稍后再试';
-        return;
-    }
-    
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('resultContainer').innerHTML = '';
-    document.getElementById('error').textContent = '';
-    
-    // 使用setTimeout让UI有时间更新加载状态
-    setTimeout(() => {
-        try {
-            const drawData = parseCSV(csvData);
+        .thenText => {
+            const drawData = parseCSV(csvText);
             if (drawData.length === 0) {
                 throw new Error('CSV文件中没有有效数据');
             }
             
             const { redStats, tailStats } = calculateStats(drawData);
             displayResults(drawData, redStats, tailStats);
-        } catch (error) {
-            document.getElementById('error').textContent = '处理数据出错: ' + error.message;
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-        }
-    }, 100);
+        })
+        .catch(error => {
+            errorElement.textContent = '加载数据出错: ' + error.message;
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            loadingElement.style.display = 'none';
+        });
 }
 
 // 解析CSV数据
@@ -99,7 +80,7 @@ function parseCSV(csvText) {
 function calculateStats(drawData) {
     // 统计红球分布和遗漏值
     const redStats = {};
-    for (let i = 1; i <= 33; i++) {
+    for (let i = 1; i <=; i++) {
         redStats[i] = [];
     }
     
@@ -110,8 +91,7 @@ function calculateStats(drawData) {
     }
     
     // 记录每个红球最近一次出现的期数索引
-    const lastAppearance = {};
-    for (let i = 1; i <= 33; i++) {
+    const lastAppearance    for (let i = 1; i <= 33; i++) {
         lastAppearance[i] = -1; // -1表示从未出现过
     }
     
@@ -169,7 +149,8 @@ function calculateStats(drawData) {
         
         for (let tailNum = 0; tailNum <= 9; tailNum++) {
             if (presentTails.includes(tailNum.toString())) {
-                // 当前期有这个尾数且出现2次及以上 tailStats[tailNum].push({
+                // 当前期有这个尾数且出现2次及以上
+                tailStats[tailNum].push({
                     period: draw.period,
                     value: tailNum.toString(),
                     count: tailCounts[tailNum],
@@ -186,9 +167,7 @@ function calculateStats(drawData) {
                 } else {
                     // 计算从最近一次出现到当前期的期数差
                     missed = i - lastTailAppearance[tailNum];
-                }
-                
-                tailStats[tailNum].push({
+                               tailStats[tailNum].push({
                     period: draw.period,
                     value: missed.toString(),
                     missed: missed,
@@ -209,7 +188,7 @@ function displayResults(drawData, redStats, tailStats) {
     // 创建表格
     const table = document.createElement('table');
     
-   创建表头
+    // 创建表头
     const thead = document.createElement('thead');
     
     // 父表头行
@@ -226,7 +205,7 @@ function displayResults(drawData, redStats, tailStats) {
     parentHeaderRow.appendChild(zone1ParentHeader);
     
     const zone2ParentHeader = document.createElement('th');
-    zone2ParentHeader = '二区';
+    zone2ParentHeader.textContent = '二区';
     zone2ParentHeader.colSpan = 11;
     zone2ParentHeader.classList.add('zone-header');
     parentHeaderRow.appendChild(zone2ParentHeader);
@@ -251,12 +230,12 @@ function displayResults(drawData, redStats, tailStats) {
     // 一区子表头 (01-11)
     for (let i = 1; i <= 11; i++) {
         const th = document.createElement('th');
-        th.textContent = i.toString().padStart(20');
+        th.textContent = i.toString().padStart(2, '0');
         childHeaderRow.appendChild(th);
     }
     
     // 二区子表头 (12-22)
-    for (let i = 12; i <= 22++) {
+    for (let i = 12; i <= 22; i++) {
         const th = document.createElement('th');
         th.textContent = i.toString().padStart(2, '0');
         childHeaderRow.appendChild(th);
@@ -265,7 +244,7 @@ function displayResults(drawData, redStats, tailStats) {
     // 三区子表头 (23-33)
     for (let i = 23; i <= 33; i++) {
         const th = document.createElement('th');
-        th.textContent = i.toString().padStart(2, '0');
+        th.textContent.toString().padStart(2, '0');
         childHeaderRow.appendChild(th);
     }
     
@@ -273,7 +252,8 @@ function displayResults(drawData, redStats, tailStats) {
     for (let i = 0; i <= 9; i++) {
         const th = document.createElement('th');
         th.textContent = i.toString();
-        childHeaderRow.appendChild(th }
+        childHeaderRow.appendChild(th);
+    }
     
     thead.appendChild(childHeaderRow);
     table.appendChild(thead);
