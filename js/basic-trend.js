@@ -2,36 +2,41 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width, initial-scale=1.0">
     <title>基本走势图 - 双色球数据分析</title>
-    <!-- 样式部分保持不变 -->
     <style>
-        /* 原有样式不变 */
+        /* 保持原有样式不变 */
+        body {
+            margin: 0;
+            padding: 20px 10px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            min-width: 860px;
+        }
+        /* 其他样式保持不变... */
     </style>
 </head>
 <body>
-    <!-- 头部和导航部分保持不变 -->
+    <!-- 保持原有HTML结构不变 -->
     <header>
         <h1>双色球基本走势图</h1>
         <p>EASY TO BUY, EASY TO WIN</p>
     </header>
     <nav>
         <ul>
-            <!-- 导航菜单不变 -->
+            <!-- 导航菜单保持不变 -->
         </ul>
     </nav>
 
     <main>
         <div class="data-container">
             <table class="data-table">
-                <!-- 表头部分保持不变 -->
+                <!-- 表头保持不变 -->
                 <thead>
                     <tr>
                         <th rowspan="2">期号</th>
                         <th class="parent-header" colspan="11">一区</th>
-                        <th class="parent-header" colspan="11">二区</th>
-                        <th class="parent-header" colspan="11">三区</th>
-                        <th class="parent-header" colspan="10">尾数</th>
+                        <!-- 其他表头保持不变 -->
                     </tr>
                     <tr>
                         <script>
@@ -61,11 +66,13 @@
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 allData = await loadCSVData();
+                // 预处理遗漏数据
+                precalculateMissValues();
                 renderTableData();
                 renderPagination();
             } catch (error) {
                 console.error('初始化失败:', error);
-                alert('数据加载失败，请检查数据文件路径');
+                alert('数据加载失败，请检查控制台查看详情');
             }
         });
 
@@ -94,59 +101,64 @@
                 .sort((a, b) => a.period.localeCompare(b.period));
         }
 
-        // 修正后的遗漏计算逻辑
-        function calculateMiss(number, currentDataIndex) {
-            const currentData = allData[currentDataIndex];
-            const isFirstPeriod = currentData.period === '2003001';
-            
-            // 如果当前期包含该号码，遗漏值为0
-            if (currentData.red.includes(number)) {
-                return 0;
-            }
-            
-            // 如果是首期且号码未出现，返回1
-            if (isFirstPeriod) {
-                return 1;
-            }
-            
-            // 从上一期开始向前查找
-            for (let i = currentDataIndex - 1; i >= 0; i--) {
-                if (allData[i].red.includes(number)) {
-                    return currentDataIndex - i;
+        // 新增：预处理所有遗漏值
+        function precalculateMissValues() {
+            // 初始化存储结构
+            allData.forEach(item => {
+                item.missValues = Array(33).fill(0);
+                item.tailMissValues = Array(10).fill(0 });
+
+            // 计算红球遗漏
+            for (let num = 1; num <= 33; num++) {
+                let lastSeen = -1; // 记录最近出现的位置
+                
+                for (let i = 0; i < allData.length; i++) {
+                    if (allData[i].red.includes(num)) {
+                        allData[i].missValues[num-1] = 0;
+                        lastSeen = i;
+                    } else {
+                        if (i === 0) {
+                            // 首期特殊处理：未出现=1
+                            allData[i].missValues[num-1] = 1;
+                        } else {
+                            if (lastSeen === -1) {
+                                // 从未出现过
+                                allData[i].missValues[num-1] = i + 1;
+                            } else {
+                                // 正常计算遗漏
+                                allData[i].missValues[num-1] = i - lastSeen;
+                            }
+                        }
+                    }
                 }
             }
-            
-            // 如果一直没找到，返回当前期数（理论上不会执行到这里）
-            return currentDataIndex + 1;
-        }
 
-        // 修正后的尾数遗漏计算逻辑
-        function calculateTailMiss(tailNumber, currentDataIndex) {
-            const currentData = allData[currentDataIndex];
-            const isFirstPeriod = currentData.period === '2003001';
-            
-            // 如果当前期包含该尾数，遗漏值为0
-            if (currentData.red.some(n => n % 10 === tailNumber)) {
-                return 0;
-            }
-            
-            // 如果是首期且尾数未出现，返回1
-            if (isFirstPeriod) {
-                return 1;
-            }
-            
-            // 从上一期开始向前查找
-            for (let i = currentDataIndex - 1; i >= 0; i--) {
-                if (allData[i].red.some(n => n % 10 === tailNumber)) {
-                    return currentDataIndex - i;
+            // 计算尾数遗漏
+            for (let tail = 0; tail <= 9; tail++) {
+                let lastSeen = -1;
+                
+                for (let i = 0; i < allData.length; i++) {
+                    if (allData[i].red.some(n => n % 10 === tail)) {
+                        allData[i].tailMissValues[tail] = 0;
+                        lastSeen = i;
+                    } else {
+                        if (i === 0) {
+                            // 首期特殊处理：未出现=1
+                            allData[i].tailMissValues[tail] = 1;
+                        } else {
+                            if (lastSeen === -1) {
+                                // 从未出现过
+                                allData[i].tailMissValues[tail] = i + 1;
+                            } else {
+                                // 正常计算遗漏
+                                allData[i].tailMissValues[tail] = i - lastSeen;
+                        }
+                    }
                 }
             }
-            
-            // 如果一直没找到，返回当前期数
-            return currentDataIndex + 1;
         }
 
-        // 修正后的表格渲染逻辑
+        // 简化后的表格渲染
         function renderTableData() {
             const tbody = document.getElementById('dataBody');
             const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -155,28 +167,25 @@
             let html = '';
             for (let i = startIndex; i < endIndex; i++) {
                 const data = allData[i];
-                const isFirstPeriod = data.period === '2003001';
                 
                 // 生成红球列
                 let redCells = '';
                 for (let num = 1; num <= 33; num++) {
-                    const isActive = data.red.includes(num);
-                    const miss = isActive ? 0 : calculateMiss(num, i);
-                    
-                    redCells += isActive ? 
-                        `<td><div class="red-ball">${num.toString().padStart(2,'0')}</div></td>` :
-                        `<td><span class="miss">${miss}</span></td>`;
+                    if (data.red.includes(num)) {
+                        redCells += `<td><div class="red-ball">${num.toString().padStart(2,'0')}</div></td>`;
+                    } else {
+                        redCells += `<td><span class="miss">${data.missValues[num-1]}</span></td>`;
+                    }
                 }
                 
                 // 生成尾数列
                 let tailCells = '';
                 for (let tail = 0; tail <= 9; tail++) {
-                    const isActive = data.red.some(n => n % 10 === tail);
-                    const miss = isActive ? 0 : calculateTailMiss(tail, i);
-                    
-                    tailCells += isActive ?
-                        `<td><div class="red-ball">${tail}</div></td>` :
-                        `<td><span class="miss">${miss}</span></td>`;
+                    if (data.red.some(n => n % 10 === tail)) {
+                        tailCells += `<td><div class="red-ball">${tail}</div></td>`;
+                    } else {
+                        tailCells += `<td><span class="miss">${data.tailMissValues[tail]}</span></td>`;
+                    }
                 }
                 
                 html += `<tr>
@@ -193,7 +202,9 @@
         function renderPagination() {
             const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
             const container = document.getElementById('pagination-controls');
-            let buttons            if (currentPage > 1) {
+            let buttons = [];
+
+            if (currentPage > 1) {
                 buttons.push(`<a class="page-btn" onclick="changePage(${currentPage - 1})">‹ 上一页</a>`);
             }
 
@@ -215,7 +226,7 @@
         window.changePage = function(newPage) {
             if (newPage < 1 || newPage > Math.ceil(allData.length / ITEMS_PER_PAGE)) return;
             currentPage = newPage;
-            renderTableData();
+           Data();
             renderPagination();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
