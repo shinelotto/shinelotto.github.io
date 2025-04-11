@@ -24,6 +24,12 @@ th {
     position: sticky;
     top: 0;
 }
+/* 新增：第12、23、34列的右边框加粗 */
+td:nth-child(12), 
+td:nth-child(23), 
+td:nth-child(34) {
+    border-right: 2px solid #999;
+}
 .zone-header {
     background-color: #e6f7ff;
 }
