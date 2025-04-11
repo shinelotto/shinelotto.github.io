@@ -20,7 +20,8 @@ function fetchCSVData() {
         })
         .then(text => {
             csvData = text;
-            document.getElementById('loading').style.display = 'none })
+            document.getElementById('loading').style.display = 'none'; 
+        })
         .catch(error => {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('error').textContent = '加载数据失败: ' + error.message;
