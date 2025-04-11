@@ -1,45 +1,68 @@
 // basic-trend.js
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 页面加载完成后自动加载数据
-    loadCSVData();
+    try {
+        await loadCSVData();
+    } catch (error) {
+        console.error('初始化错误:', error);
+    }
 });
 
-function loadCSVData() {
+async function loadCSVData() {
     const loadingElement = document.getElementById('loading');
     const errorElement = document.getElementById('error');
+    const resultContainer = document.getElementById('resultContainer');
     
+    // 显示加载状态
     loadingElement.style.display = 'block';
+    errorElement.style.display = 'none';
     errorElement.textContent = '';
+    resultContainer.innerHTML = '<div class="loading-text">数据加载中...</div>';
     
-    // 使用fetch API获取CSV文件
-    fetch('../../data/ssqhistory.csv')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('网络响应不正常');
-            }
-            return response.text();
-        })
-        .then(csvText => {
-            const drawData = parseCSV(csvText);
-            if (drawData.length === 0) {
-                throw new Error('CSV文件中没有有效数据');
-            }
-            
-            const { redStats, tailStats } = calculateStats(drawData);
-            displayResults(drawData, redStats, tailStats);
-        })
-        .catch(error => {
-            errorElement.textContent = '加载数据出错: ' + error.message;
-            console.error('Error:', error);
-        })
-        .finally(() => {
-            loadingElement.style.display = 'none';
-        });
+    try {
+        // 1. 加载CSV数据（使用相对路径）
+        const response = await fetch('../../data/ssqhistory.csv');
+        if (!response.ok) throw new Error(`文件加载失败：${response.status}`);
+        const csvText = await response.text();
+
+        // 2. 解析数据
+        const drawData = parseCSV(csvText);
+        if (drawData.length === 0) throw new Error('数据文件为空');
+
+        // 3. 计算统计数据
+        const { redStats, tailStats } = calculateStats(drawData);
+
+        // 4. 显示结果
+        displayResults(drawData, redStats, tailStats);
+
+    } catch (error) {
+        console.error('数据加载错误:', error);
+        errorElement.textContent = `加载失败: ${error.message}`;
+        errorElement.style.display = 'block';
+        resultContainer.innerHTML = `
+            <div class="error-content">
+                <p>无法显示走势图，请检查：</p>
+                <ul>
+                    <li>数据文件是否存在</li>
+                    <li>文件路径是否正确</li>
+                    <li>文件格式是否符合要求</li>
+                </ul>
+                <button onclick="location.reload()">重新加载</button>
+            </div>
+        `;
+    } finally {
+        loadingElement.style.display = 'none';
+    }
 }
 
 // 解析CSV数据
 function parseCSV(csvText) {
+    // 移除UTF-8 BOM头
+    if (csvText.charCodeAt(0) === 0xFEFF) {
+        csvText = csvText.substring(1);
+    }
+
     const lines = csvText.split('\n').filter(line => line.trim());
     const drawData = [];
     
@@ -80,7 +103,7 @@ function parseCSV(csvText) {
 function calculateStats(drawData) {
     // 统计红球分布和遗漏值
     const redStats = {};
-    for (let i = 1; i <=; i++) {
+    for (let i = 1; i <= 33; i++) {
         redStats[i] = [];
     }
     
@@ -91,7 +114,8 @@ function calculateStats(drawData) {
     }
     
     // 记录每个红球最近一次出现的期数索引
-    const lastAppearance    for (let i = 1; i <= 33; i++) {
+    const lastAppearance = {};
+    for (let i = 1; i <= 33; i++) {
         lastAppearance[i] = -1; // -1表示从未出现过
     }
     
@@ -167,7 +191,9 @@ function calculateStats(drawData) {
                 } else {
                     // 计算从最近一次出现到当前期的期数差
                     missed = i - lastTailAppearance[tailNum];
-                               tailStats[tailNum].push({
+                }
+                
+                tailStats[tailNum].push({
                     period: draw.period,
                     value: missed.toString(),
                     missed: missed,
@@ -244,7 +270,7 @@ function displayResults(drawData, redStats, tailStats) {
     // 三区子表头 (23-33)
     for (let i = 23; i <= 33; i++) {
         const th = document.createElement('th');
-        th.textContent.toString().padStart(2, '0');
+        th.textContent = i.toString().padStart(2, '0');
         childHeaderRow.appendChild(th);
     }
     
