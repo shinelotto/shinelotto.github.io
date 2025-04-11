@@ -1,235 +1,330 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width, initial-scale=1.0">
-    <title>基本走势图 - 双色球数据分析</title>
-    <style>
-        /* 保持原有样式不变 */
-        body {
-            margin: 0;
-            padding: 20px 10px;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f5f5f5;
-            min-width: 860px;
-        }
-        /* 其他样式保持不变... */
-    </style>
-</head>
-<body>
-    <!-- 保持原有HTML结构不变 -->
-    <header>
-        <h1>双色球基本走势图</h1>
-        <p>EASY TO BUY, EASY TO WIN</p>
-    </header>
-    <nav>
-        <ul>
-            <!-- 导航菜单保持不变 -->
-        </ul>
-    </nav>
+let csvData = null;
 
-    <main>
-        <div class="data-container">
-            <table class="data-table">
-                <!-- 表头保持不变 -->
-                <thead>
-                    <tr>
-                        <th rowspan="2">期号</th>
-                        <th class="parent-header" colspan="11">一区</th>
-                        <!-- 其他表头保持不变 -->
-                    </tr>
-                    <tr>
-                        <script>
-                            document.write(Array.from({length:33}, (_,i) => 
-                                `<th>${(i+1).toString().padStart(2,'0')}</th>`
-                            ).join(''));
-                            document.write(Array.from({length:10}, (_,i) => 
-                                `<th>${i}</th>`
-                            ).join(''));
-                        </script>
-                    </tr>
-                </thead>
-                <tbody id="dataBody"></tbody>
-            </table>
-            <div class="pagination" id="pagination-controls"></div>
-        </div>
-    </main>
+// 读取CSV文件
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        csvData = e.target.result;
+        document.getElementById('error').textContent = '';
+    };
+    reader.onerror = function() {
+        document.getElementById('error').textContent = '读取文件失败';
+    };
+    reader.readAsText(file);
+});
 
-    <script>
-        // 配置常量
-        const ITEMS_PER_PAGE = 50;
-        const DATA_PATH = '../../../../../data/ssq.csv';
-        let currentPage = 1;
-        let allData = [];
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                allData = await loadCSVData();
-                // 预处理遗漏数据
-                precalculateMissValues();
-                renderTableData();
-                renderPagination();
-            } catch (error) {
-                console.error('初始化失败:', error);
-                alert('数据加载失败，请检查控制台查看详情');
-            }
-        });
-
-        // 数据加载（保持不变）
-        async function loadCSVData() {
-            const response = await fetch(DATA_PATH);
-            const csvText = await response.text();
-            
-            return csvText.split('\n')
-                .slice(1)
-                .filter(line => {
-                    const cols = line.split(',');
-                    return cols.length === 7 && /^\d{7}$/.test(cols[0]);
-                })
-                .map(line => {
-                    const [period, ...balls] = line.split(',');
-                    return {
-                        period: period.trim(),
-                        red: balls.slice(0,6)
-                            .map(n => Math.max(1, Math.min(33, parseInt(n))))
-                            .filter(n => !isNaN(n))
-                            .sort((a,b) => a - b),
-                        blue: parseInt(balls[6])
-                    };
-                })
-                .sort((a, b) => a.period.localeCompare(b.period));
-        }
-
-        // 新增：预处理所有遗漏值
-        function precalculateMissValues() {
-            // 初始化存储结构
-            allData.forEach(item => {
-                item.missValues = Array(33).fill(0);
-                item.tailMissValues = Array(10).fill(0 });
-
-            // 计算红球遗漏
-            for (let num = 1; num <= 33; num++) {
-                let lastSeen = -1; // 记录最近出现的位置
-                
-                for (let i = 0; i < allData.length; i++) {
-                    if (allData[i].red.includes(num)) {
-                        allData[i].missValues[num-1] = 0;
-                        lastSeen = i;
-                    } else {
-                        if (i === 0) {
-                            // 首期特殊处理：未出现=1
-                            allData[i].missValues[num-1] = 1;
-                        } else {
-                            if (lastSeen === -1) {
-                                // 从未出现过
-                                allData[i].missValues[num-1] = i + 1;
-                            } else {
-                                // 正常计算遗漏
-                                allData[i].missValues[num-1] = i - lastSeen;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 计算尾数遗漏
-            for (let tail = 0; tail <= 9; tail++) {
-                let lastSeen = -1;
-                
-                for (let i = 0; i < allData.length; i++) {
-                    if (allData[i].red.some(n => n % 10 === tail)) {
-                        allData[i].tailMissValues[tail] = 0;
-                        lastSeen = i;
-                    } else {
-                        if (i === 0) {
-                            // 首期特殊处理：未出现=1
-                            allData[i].tailMissValues[tail] = 1;
-                        } else {
-                            if (lastSeen === -1) {
-                                // 从未出现过
-                                allData[i].tailMissValues[tail] = i + 1;
-                            } else {
-                                // 正常计算遗漏
-                                allData[i].tailMissValues[tail] = i - lastSeen;
-                        }
-                    }
-                }
-            }
-        }
-
-        // 简化后的表格渲染
-        function renderTableData() {
-            const tbody = document.getElementById('dataBody');
-            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, allData.length);
-            
-            let html = '';
-            for (let i = startIndex; i < endIndex; i++) {
-                const data = allData[i];
-                
-                // 生成红球列
-                let redCells = '';
-                for (let num = 1; num <= 33; num++) {
-                    if (data.red.includes(num)) {
-                        redCells += `<td><div class="red-ball">${num.toString().padStart(2,'0')}</div></td>`;
-                    } else {
-                        redCells += `<td><span class="miss">${data.missValues[num-1]}</span></td>`;
-                    }
-                }
-                
-                // 生成尾数列
-                let tailCells = '';
-                for (let tail = 0; tail <= 9; tail++) {
-                    if (data.red.some(n => n % 10 === tail)) {
-                        tailCells += `<td><div class="red-ball">${tail}</div></td>`;
-                    } else {
-                        tailCells += `<td><span class="miss">${data.tailMissValues[tail]}</span></td>`;
-                    }
-                }
-                
-                html += `<tr>
-                    <td>${data.period}</td>
-                    ${redCells}
-                    ${tailCells}
-                </tr>`;
+function processData() {
+    if (!csvData) {
+        document.getElementById('error').textContent = '请先选择CSV文件';
+        return;
+    }
+    
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('resultContainer').innerHTML = '';
+    document.getElementById('error').textContent = '';
+    
+    // 使用setTimeout让UI有时间更新加载状态
+    setTimeout(() => {
+        try {
+            const drawData = parseCSV(csvData);
+            if (drawData.length === 0) {
+                throw new Error('CSV文件中没有有效数据');
             }
             
-            tbody.innerHTML = html;
+            const { redStats, tailStats } = calculateStats(drawData);
+            displayResults(drawData, redStats, tailStats);
+        } catch (error) {
+            document.getElementById('error').textContent = '处理数据出错: ' + error.message;
+        } finally {
+            document.getElementById('loading').style.display = 'none';
         }
+    }, 100);
+}
 
-        // 分页功能（保持不变）
-        function renderPagination() {
-            const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
-            const container = document.getElementById('pagination-controls');
-            let buttons = [];
-
-            if (currentPage > 1) {
-                buttons.push(`<a class="page-btn" onclick="changePage(${currentPage - 1})">‹ 上一页</a>`);
+// 解析CSV数据
+function parseCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    const drawData = [];
+    
+    for (const line of lines) {
+        // 假设CSV格式为：期号,红球1,红球2,红球3,红球4,红球5,红球6,蓝球
+        const parts = line.split(',').map(part => part.trim());
+        if (parts.length < 7) continue;
+        
+        // 尝试转换为数字
+        const redBalls = [];
+        let isValid = true;
+        for (let i = 1; i <= 6; i++) {
+            const num = parseInt(parts[i], 10);
+            if (isNaN(num) || num < 1 || num > 33) {
+                isValid = false;
+                break;
             }
-
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, currentPage + 2);
-            for (let i = startPage; i <= endPage; i++) {
-                buttons.push(
-                    `<a class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</a>`
-                );
-            }
-
-            if (currentPage < totalPages) {
-                buttons.push(`<a class="page-btn" onclick="changePage(${currentPage + 1})">下一页 ›</a>`);
-            }
-
-            container.innerHTML = buttons.join('');
+            redBalls.push(num);
         }
-
-        window.changePage = function(newPage) {
-            if (newPage < 1 || newPage > Math.ceil(allData.length / ITEMS_PER_PAGE)) return;
-            currentPage = newPage;
-           Data();
-            renderPagination();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        if (!isValid) continue;
+        
+        const draw = {
+            period: parts[0],
+            redBalls: redBalls.sort((a, b) => a - b),
+            blueBall: parts[7]
         };
-    </script>
-</body>
-</html>
+        
+        drawData.push(draw);
+    }
+    
+    // 按时间顺序排序（最早的在前）
+    drawData.sort((a, b) => a.period.localeCompare(b.period));
+    return drawData;
+}
+
+// 计算统计结果
+function calculateStats(drawData) {
+    // 统计红球分布和遗漏值
+    const redStats = {};
+    for (let i = 1; i <= 33; i++) {
+        redStats[i] = [];
+    }
+    
+    // 统计同尾分布和遗漏值
+    const tailStats = {};
+    for (let i = 0; i <= 9; i++) {
+        tailStats[i] = [];
+    }
+    
+    // 记录每个红球最近一次出现的期数索引
+    const lastAppearance = {};
+    for (let i = 1; i <= 33; i++) {
+        lastAppearance[i] = -1; // -1表示从未出现过
+    }
+    
+    // 记录每个尾数最近一次出现的期数索引（仅当尾数出现2次及以上时才更新）
+    const lastTailAppearance = {};
+    for (let i = 0; i <= 9; i++) {
+        lastTailAppearance[i] = -1; // -1表示从未出现过
+    }
+    
+    // 处理每一期数据
+    for (let i = 0; i < drawData.length; i++) {
+        const draw = drawData[i];
+        const redBalls = draw.redBalls;
+        
+        // 统计红球
+        for (let ballNum = 1; ballNum <= 33; ballNum++) {
+            if (redBalls.includes(ballNum)) {
+                // 当前期有这个红球
+                redStats[ballNum].push({
+                    period: draw.period,
+                    value: ballNum.toString().padStart(2, '0'),
+                    missed: 0,
+                    isPresent: true
+                });
+                lastAppearance[ballNum] = i; // 更新最近出现期数索引
+            } else {
+                // 计算遗漏值
+                let missed;
+                if (lastAppearance[ballNum] === -1) {
+                    // 从未出现过
+                    missed = i + 1; // 从第一期开始计算遗漏
+                } else {
+                    // 计算从最近一次出现到当前期的期数差
+                    missed = i - lastAppearance[ballNum];
+                }
+                
+                redStats[ballNum].push({
+                    period: draw.period,
+                    value: missed.toString(),
+                    missed: missed,
+                    isPresent: false
+                });
+            }
+        }
+        
+        // 统计同尾
+        const tailCounts = {};
+        redBalls.forEach(ball => {
+            const tail = ball % 10;
+            tailCounts[tail] = (tailCounts[tail] || 0) + 1;
+        });
+        
+        // 找出出现2次及以上的尾数
+        const presentTails = Object.keys(tailCounts).filter(tail => tailCounts[tail] >= 2);
+        
+        for (let tailNum = 0; tailNum <= 9; tailNum++) {
+            if (presentTails.includes(tailNum.toString())) {
+                // 当前期有这个尾数且出现2次及以上 tailStats[tailNum].push({
+                    period: draw.period,
+                    value: tailNum.toString(),
+                    count: tailCounts[tailNum],
+                    missed: 0,
+                    isPresent: true
+                });
+                lastTailAppearance[tailNum] = i; // 更新最近出现期数索引
+            } else {
+                // 计算遗漏值
+                let missed;
+                if (lastTailAppearance[tailNum] === -1) {
+                    // 从未出现过
+                    missed = i + 1; // 从第一期开始计算遗漏
+                } else {
+                    // 计算从最近一次出现到当前期的期数差
+                    missed = i - lastTailAppearance[tailNum];
+                }
+                
+                tailStats[tailNum].push({
+                    period: draw.period,
+                    value: missed.toString(),
+                    missed: missed,
+                    isPresent: false
+                });
+            }
+        }
+    }
+    
+    return { redStats, tailStats };
+}
+
+// 显示结果表格
+function displayResults(drawData, redStats, tailStats) {
+    const resultContainer = document.getElementById('resultContainer');
+    resultContainer.innerHTML = '';
+    
+    // 创建表格
+    const table = document.createElement('table');
+    
+   创建表头
+    const thead = document.createElement('thead');
+    
+    // 父表头行
+    const parentHeaderRow = document.createElement('tr');
+    const periodParentHeader = document.createElement('th');
+    periodParentHeader.textContent = '期号';
+    periodParentHeader.rowSpan = 2;
+    parentHeaderRow.appendChild(periodParentHeader);
+    
+    const zone1ParentHeader = document.createElement('th');
+    zone1ParentHeader.textContent = '一区';
+    zone1ParentHeader.colSpan = 11;
+    zone1ParentHeader.classList.add('zone-header');
+    parentHeaderRow.appendChild(zone1ParentHeader);
+    
+    const zone2ParentHeader = document.createElement('th');
+    zone2ParentHeader = '二区';
+    zone2ParentHeader.colSpan = 11;
+    zone2ParentHeader.classList.add('zone-header');
+    parentHeaderRow.appendChild(zone2ParentHeader);
+    
+    const zone3ParentHeader = document.createElement('th');
+    zone3ParentHeader.textContent = '三区';
+    zone3ParentHeader.colSpan = 11;
+    zone3ParentHeader.classList.add('zone-header');
+    parentHeaderRow.appendChild(zone3ParentHeader);
+    
+    const tailParentHeader = document.createElement('th');
+    tailParentHeader.textContent = '同尾分布';
+    tailParentHeader.colSpan = 10;
+    tailParentHeader.classList.add('tail-header');
+    parentHeaderRow.appendChild(tailParentHeader);
+    
+    thead.appendChild(parentHeaderRow);
+    
+    // 子表头行
+    const childHeaderRow = document.createElement('tr');
+    
+    // 一区子表头 (01-11)
+    for (let i = 1; i <= 11; i++) {
+        const th = document.createElement('th');
+        th.textContent = i.toString().padStart(20');
+        childHeaderRow.appendChild(th);
+    }
+    
+    // 二区子表头 (12-22)
+    for (let i = 12; i <= 22++) {
+        const th = document.createElement('th');
+        th.textContent = i.toString().padStart(2, '0');
+        childHeaderRow.appendChild(th);
+    }
+    
+    // 三区子表头 (23-33)
+    for (let i = 23; i <= 33; i++) {
+        const th = document.createElement('th');
+        th.textContent = i.toString().padStart(2, '0');
+        childHeaderRow.appendChild(th);
+    }
+    
+    // 同尾子表头 (0-9)
+    for (let i = 0; i <= 9; i++) {
+        const th = document.createElement('th');
+        th.textContent = i.toString();
+        childHeaderRow.appendChild(th }
+    
+    thead.appendChild(childHeaderRow);
+    table.appendChild(thead);
+    
+    // 创建表格内容
+    const tbody = document.createElement('tbody');
+    
+    // 添加每一行数据
+    for (let i = 0; i < drawData.length; i++) {
+        const draw = drawData[i];
+        const row = document.createElement('tr');
+        
+        // 期号
+        const periodCell = document.createElement('td');
+        periodCell.textContent = draw.period;
+        row.appendChild(periodCell);
+        
+        // 红球数据 (01-33)
+        for (let ballNum = 1; ballNum <= 33; ballNum++) {
+            const stat = redStats[ballNum][i];
+            const cell = document.createElement('td');
+            
+            if (stat.isPresent) {
+                const ball = document.createElement('span');
+                ball.className = 'red-ball';
+                ball.textContent = stat.value;
+                cell.appendChild(ball);
+            } else {
+                cell.textContent = stat.value;
+                cell.classList.add('missed');
+            }
+            
+            row.appendChild(cell);
+        }
+        
+        // 同尾数据 (0-9)
+        for (let tailNum = 0; tailNum <= 9; tailNum++) {
+            const stat = tailStats[tailNum][i];
+            const cell = document.createElement('td');
+            
+            if (stat.isPresent) {
+                const ball = document.createElement('span');
+                ball.className = 'blue-ball';
+                ball.textContent = stat.value;
+                
+                if (stat.count > 1) {
+                    const sup = document.createElement('span');
+                    sup.className = 'sup';
+                    sup.textContent = stat.count.toString();
+                    ball.appendChild(sup);
+                }
+                
+                cell.appendChild(ball);
+            } else {
+                cell.textContent = stat.value;
+                cell.classList.add('missed');
+            }
+            
+            row.appendChild(cell);
+        }
+        
+        tbody.appendChild(row);
+    }
+    
+    table.appendChild(tbody);
+    resultContainer.appendChild(table);
+}

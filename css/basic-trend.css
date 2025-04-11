@@ -1,91 +1,120 @@
-/* 修复后的完整CSS */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-.trend-container {
-    width: 100%;
+body {
+    font-family: Arial, sans-serif;
     margin: 20px auto;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    overflow-x: auto; /* 添加横向滚动 */
-}
-
-/* 表格布局核心设置 */
-.data-table {
-    table-layout: fixed;
-    width: 197px; /* 25 + (4x33) + (4x10) */
-    border-collapse: collapse;
-}
-
-/* 期号列设置 */
-.period-column {
-    width: 25px !important;
-    min-width: 25px;
-    text-align: center;
-    vertical-align: middle;
-    background: #e74c3c;
-    color: white;
-    padding: 8px;
-    border-right: 1px solid rgba(255,255,255,0.3);
-}
-
-/* 号码列基础设置 */
-.number-column {
-    width: 4px !important;
-    min-width: 4px;
-    height: 25px;
-    padding: 0;
-    border: 1px solid #eee;
+    width: calc(100% - 1160px); /* 总宽度减去两边距 */
     position: relative;
 }
-
-/* 父列头样式 */
-.zone-parent {
-    background: #c0392b;
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+    font-size: 12px;
+}
+th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+}
+.zone-header {
+    background-color: #e6f7ff;
+}
+.tail-header {
+    background-color: #fff7e6;
+}
+.missed {
+    color: #999;
+}
+.present {
+    font-weight: bold;
+}
+.sup {
+    font-size: 0.7em;
+    vertical-align: super;
+}
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #45a049;
+}
+.file-input {
+    display: none;
+}
+.file-label {
+    padding: 8px 16px;
+    background-color: #2196F3;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.file-label:hover {
+    background-color: #0b7dda;
+}
+.loading {
+    text-align: center;
+    margin: 20px;
+    font-size: 16px;
+    color: #666;
+}
+.error {
+    color: red;
+    text-align: center;
+    margin: 20px;
+}
+.red-ball {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    border-radius: 50%;
+    background-color: #f44336;
     color: white;
     font-weight: bold;
-    padding: 8px;
-    text-align: center;
-    width: calc(4px * var(--colspan)); /* 动态计算宽度 */
-}
-
-/* 红球样式 */
-.red-ball {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #e74c3c;
-    color: white;
     font-size: 12px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-
-/* 遗漏值样式 */
-.miss-count {
-    position: absolute;
-    bottom: 1px;
-    right: 1px;
-    font-size: 8px;
-    color: #95a5a6;
-    line-height: 1;
-}
-
-/* 表头特殊处理 */
-.zone-header {
-    background: #e74c3c;
+.blue-ball {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    border-radius: 50%;
+    background-color: #2196F3;
     color: white;
+    font-weight: bold;
+    font-size: 12px;
+    position: relative;
 }
-
-/* 数据行背景 */
-.data-row:nth-child(even) {
-    background: #f9f9f9;
+.blue-ball .sup {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 12px;
+    color: red;
+    background-color: white;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    line-height: 10px;
+    font-weight: bold;
 }
