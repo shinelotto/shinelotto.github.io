@@ -123,6 +123,50 @@
         #resultContainer {
             margin: 20px auto;
             max-width: 1200px;
+            overflow-x: auto;
+        }
+        
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        .red-ball {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            border-radius: 50%;
+            background-color: #f44336;
+            color: white;
+            font-weight: bold;
+        }
+        .blue-ball {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            border-radius: 50%;
+            background-color: #2196F3;
+            color: white;
+            font-weight: bold;
+        }
+        .missed {
+            color: #999;
+        }
+        .sup {
+            font-size: 0.8em;
+            vertical-align: super;
         }
     </style>
 </head>
@@ -193,8 +237,14 @@
     
     <script src="../../../js/basic-trend.js"></script>
     <script>
+        // 全局变量
+        let currentPage = 1;
+        const itemsPerPage = 50; // 每页显示50期数据
+        let allData = []; // 存储所有数据
+        let currentData = []; // 存储当前显示的数据
+
         // 分页逻辑
-        function generatePagination(totalPages, currentPage) {
+        function generatePagination(totalPages) {
             let paginationHTML = '';
             const maxVisiblePages = 5;
             
@@ -228,16 +278,57 @@
         }
         
         function changePage(page) {
-            // 这里添加实际的分页逻辑
-            console.log('切换到页码:', page);
-            // 示例：加载对应页码的数据
-            // loadData(page);
+            currentPage = Math.max(1, Math.min(page, Math.ceil(allData.length / itemsPerPage)));
+            updateTable();
+            generatePagination(Math.ceil(allData.length / itemsPerPage));
         }
         
-        // 初始化时生成分页（示例：假设总共有10页，当前第1页）
-        window.onload = function() {
-            generatePagination(10, 1);
-        };
+        function updateTable() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            currentData = allData.slice(start, end);
+            
+            // 调用basic-trend.js中的displayResults函数显示当前页数据
+            if (typeof displayResults === 'function') {
+                const { redStats, tailStats } = calculateStats(allData);
+                displayResults(currentData, redStats, tailStats);
+            }
+        }
+
+        // 覆盖loadCSVData函数以支持分页
+        async function loadCSVData() {
+            const loadingElement = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
+            
+            loadingElement.style.display = 'block';
+            errorElement.textContent = '';
+            
+            try {
+                const response = await fetch('../../../data/ssqhistory.csv');
+                if (!response.ok) throw new Error('网络响应不正常');
+                
+                const csvText = await response.text();
+                allData = parseCSV(csvText);
+                
+                if (allData.length === 0) throw new Error('CSV文件中没有有效数据');
+                
+                // 初始化分页
+                const totalPages = Math.ceil(allData.length / itemsPerPage);
+                generatePagination(totalPages);
+                updateTable();
+                
+            } catch (error) {
+                errorElement.textContent = '加载数据出错: ' + error.message;
+                console.error('Error:', error);
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        // 初始化加载数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCSVData();
+        });
     </script>
 </body>
 </html>
