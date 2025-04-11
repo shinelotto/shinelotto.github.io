@@ -20,7 +20,7 @@ function loadCSVData() {
             }
             return response.text();
         })
-        .then(Text => {
+        .then(csvText => {
             const drawData = parseCSV(csvText);
             if (drawData.length === 0) {
                 throw new Error('CSV文件中没有有效数据');
