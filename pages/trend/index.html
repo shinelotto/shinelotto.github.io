@@ -118,7 +118,7 @@
             text-align: center;
             padding: 20px;
             margin-top: 30px;
-            background-color: #f5f5;
+            background-color: #f5f5f5;
         }
     </style>
 </head>
@@ -134,10 +134,11 @@
         <ul>
             <li><a href="../../index.html">返回主页</a></li>
             <li><a href="../../history.html">历史开奖</a></li>
+            <!-- 移植的统计指标下拉菜单 -->
             <li class="dropdown">
                 <a href="javascript:void(0)">统计指标</a>
                 <div class="dropdown-content">
-                    <div class="menu">
+                    <div class="dropdown-submenu">
                         <a href="javascript:void(0)">红球</a>
                         <div class="dropdown-subcontent">
                             <div class="dropdown-submenu">
@@ -152,7 +153,7 @@
                                     <a href="../statistics/red-static/size-ratio.html">大小比</a>
                                     <a href="../statistics/red-static/prime-composite.html">质合比</a>
                                     <a href="../statistics/red-static/consecutive.html">连号</a>
-                                    <a href="../statistics/red-static/same-tail同尾</a>
+                                    <a href="../statistics/red-static/same-tail.html">同尾</a>
                                 </div>
                             </div>
                             <div class="dropdown-submenu">
@@ -178,7 +179,7 @@
                     </div>
                 </div>
             </li>
-            <a href="basic-trend.html" class="active">基本走势图</a></li>
+            <li><a href="basic-trend.html" class="active">基本走势图</a></li>
             <li><a href="../cold-numbers/cold-numbers.html">冷门统计</a></li>
             <li><a href="../prediction/prediction.html">脑机结合预测</a></li>
         </ul>
@@ -207,13 +208,13 @@
         const itemsPerPage = 50;
         let allData = [];
 
-        // 分页逻辑（保持不变）
+        // 分页逻辑（已修复语法错误）
         function generatePagination() {
- totalPages = Math.ceil(allData.length / itemsPerPage);
+            const totalPages = Math.ceil(allData.length / itemsPerPage);
             let paginationHTML = '';
             const maxVisiblePages = 5;
             
-            paginationHTML += href="#" class="${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">上一页</a>`;
+            paginationHTML += `<a href="#" class="${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">上一页</a>`;
             
             if (currentPage > 2) {
                 paginationHTML += `<a href="#" class="page-start" onclick="changePage(1)">1</a>`;
@@ -232,11 +233,58 @@
                 paginationHTML += `<a href="#" class="page-end" onclick="changePage(${totalPages})">${totalPages}</a>`;
             }
             
-            paginationHTML += `<a href="#" class="${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">下一页</a>            document.getElementById('pagination-controls').innerHTML = paginationHTML;
+            paginationHTML += `<a href="#" class="${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">下一页</a>`;
+            
+            document.getElementById('pagination-controls').innerHTML = paginationHTML;
         }
 
-        // 其他函数保持不变...
-        // ...（保留原有JavaScript代码）
+        function changePage(page) {
+            currentPage = Math.max(1, Math.min(page, Math.ceil(allData.length / itemsPerPage)));
+            updateTable();
+            generatePagination();
+        }
+        
+        function updateTable() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = allData.slice(start, end);
+            
+            if (typeof displayResults === 'function') {
+                const { redStats, tailStats } = calculateStats(allData);
+                displayResults(pageData, redStats, tailStats);
+            }
+        }
+
+        async function loadCSVData() {
+            const loadingElement = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
+            
+            loadingElement.style.display = 'block';
+            errorElement.textContent = '';
+            
+            try {
+                const response = await fetch('../../../data/ssqhistory.csv');
+                if (!response.ok) throw new Error('网络响应不正常');
+                
+                const csvText = await response.text();
+                allData = parseCSV(csvText);
+                
+                if (allData.length === 0) throw new Error('CSV文件中没有有效数据');
+                
+                generatePagination();
+                updateTable();
+                
+            } catch (error) {
+                errorElement.textContent = '加载数据出错: ' + error.message;
+                console.error('Error:', error);
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCSVData();
+        });
     </script>
 </body>
 </html>
