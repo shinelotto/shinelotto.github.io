@@ -123,50 +123,6 @@
         #resultContainer {
             margin: 20px auto;
             max-width: 1200px;
-            overflow-x: auto;
-        }
-        
-        /* 表格样式 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-        }
-        .red-ball {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            border-radius: 50%;
-            background-color: #f44336;
-            color: white;
-            font-weight: bold;
-        }
-        .blue-ball {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            border-radius: 50%;
-            background-color: #2196F3;
-            color: white;
-            font-weight: bold;
-        }
-        .missed {
-            color: #999;
-        }
-        .sup {
-            font-size: 0.8em;
-            vertical-align: super;
         }
     </style>
 </head>
@@ -198,7 +154,7 @@
                                 </div>
                             </div>
                             <div class="dropdown-submenu">
-                                <a href="javascript:void(0)">动态指标</a>
+                                <a href="javascript void(0)">动态指标</a>
                                 <div class="dropdown-subcontent">
                                     <a href="../statistics/red-dynamic/cold-hot.html">冷热比</a>
                                     <a href="../statistics/red-dynamic/repeat.html">重号</a>
@@ -241,10 +197,10 @@
         let currentPage = 1;
         const itemsPerPage = 50; // 每页显示50期数据
         let allData = []; // 存储所有数据
-        let currentData = []; // 存储当前显示的数据
-
+        
         // 分页逻辑
-        function generatePagination(totalPages) {
+        function generatePagination() {
+            const totalPages = Math.ceil(allData.length / itemsPerPage);
             let paginationHTML = '';
             const maxVisiblePages = 5;
             
@@ -280,18 +236,18 @@
         function changePage(page) {
             currentPage = Math.max(1, Math.min(page, Math.ceil(allData.length / itemsPerPage)));
             updateTable();
-            generatePagination(Math.ceil(allData.length / itemsPerPage));
+            generatePagination();
         }
         
         function updateTable() {
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
-            currentData = allData.slice(start, end);
+            const pageData = allData.slice(start, end);
             
             // 调用basic-trend.js中的displayResults函数显示当前页数据
             if (typeof displayResults === 'function') {
                 const { redStats, tailStats } = calculateStats(allData);
-                displayResults(currentData, redStats, tailStats);
+                displayResults(pageData, redStats, tailStats);
             }
         }
 
@@ -313,8 +269,7 @@
                 if (allData.length === 0) throw new Error('CSV文件中没有有效数据');
                 
                 // 初始化分页
-                const totalPages = Math.ceil(allData.length / itemsPerPage);
-                generatePagination(totalPages);
+                generatePagination();
                 updateTable();
                 
             } catch (error) {
