@@ -165,28 +165,46 @@
                 .sort((a, b) => a.period.localeCompare(b.period));
         }
 
-        // 核心遗漏计算逻辑（向前查找）
+        // 修改后的遗漏计算逻辑（首期未出现设为1）
         function calculateMiss(number, currentIndex) {
+            const currentData = allData[currentIndex];
+            const isFirstPeriod = currentData.period === '1';
+            
+            // 如果是首期且号码未出现，返回1
+            if (isFirstPeriod && !currentData.red.includes(number)) {
+                return 1 }
+            
             // 从当前期向前查找（包含当前期）
             for (let i = currentIndex; i >= 0; i--) {
                 if (allData[i].red.includes(number)) {
                     return currentIndex - i;
                 }
             }
-            return currentIndex + 1; // 首期处理
+            
+            return currentIndex + 1;
         }
 
+        // 修改后的尾数遗漏计算逻辑（首期未出现设为1）
         function calculateTailMiss(tailNumber, currentIndex) {
+            const currentData = allData[currentIndex];
+            const isFirstPeriod = currentData.period === '2003001';
+            
+            // 如果是首期且尾数未出现，返回1
+            if (isFirstPeriod && !currentData.red.some(n => n % 10 === tailNumber)) {
+                return 1;
+            }
+            
             // 从当前期向前查找（包含当前期）
             for (let i = currentIndex; i >= 0; i--) {
                 if (allData[i].red.some(n => n % 10 === tailNumber)) {
                     return currentIndex - i;
                 }
             }
+            
             return currentIndex + 1;
         }
 
-        // 表格渲染
+        // 表格渲染（保持不变）
         function renderTableData() {
             const tbody = document.getElementById('dataBody');
             const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -232,7 +250,7 @@
                 }).join('');
         }
 
-        // 分页功能
+        // 分页功能（保持不变）
         function renderPagination() {
             const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
             const container = document.getElementById('pagination-controls');
