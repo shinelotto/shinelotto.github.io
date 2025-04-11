@@ -3,16 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>双色球历史开奖数据统计</title>
+    <title>基本走势图</title>
     <link rel="stylesheet" href="../../css/basic-trend.css">
+    <style>
+        /* 导航栏样式 */
+        nav {
+            background-color: #333;
+            padding: 10px 0;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav li {
+            position: relative;
+            margin: 0 15px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
+        .active {
+            background-color: #4CAF50;
+        }
+        
+        /* 下拉菜单样式 */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        /* 二级下拉菜单 */
+        .dropdown-submenu {
+            position: relative;
+        }
+        .dropdown-subcontent {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        }
+        .dropdown-submenu:hover .dropdown-subcontent {
+            display: block;
+        }
+        
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination a {
+            color: #333;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            margin: 0 4px;
+            border-radius: 4px;
+        }
+        .pagination a:hover:not(.disabled) {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        .pagination a.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .pagination a.disabled {
+            color: #ccc;
+            pointer-events: none;
+        }
+        .pagination .page-start,
+        .pagination .page-end {
+            display: inline-block;
+        }
+        
+        /* 加载和错误提示样式 */
+        .loading {
+            text-align: center;
+            margin: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin: 20px;
+        }
+        
+        /* 内容区域样式 */
+        #resultContainer {
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+    </style>
 </head>
 <body>
-    <h1>双色球历史开奖数据统计</h1>
+    <!-- 导航栏 -->
+    <nav>
+        <ul>
+            <li><a href="../../index.html">返回主页</a></li>
+            <li><a href="../history/history.html">历史开奖</a></li>
+            <li class="dropdown">
+                <a href="javascript:void(0)">统计指标</a>
+                <div class="dropdown-content">
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">红球</a>
+                        <div class="dropdown-subcontent">
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">静态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="../statistics/red-static/sum.html">和值</a>
+                                    <a href="../statistics/red-static/span.html">跨度</a>
+                                    <a href="../statistics/red-static/ac.html">AC值</a>
+                                    <a href="../statistics/red-static/zone-ratio.html">区间比</a>
+                                    <a href="../statistics/red-static/odd-even.html">奇偶比</a>
+                                    <a href="../statistics/red-static/road012.html">012路</a>
+                                    <a href="../statistics/red-static/size-ratio.html">大小比</a>
+                                    <a href="../statistics/red-static/prime-composite.html">质合比</a>
+                                    <a href="../statistics/red-static/consecutive.html">连号</a>
+                                    <a href="../statistics/red-static/same-tail.html">同尾</a>
+                                </div>
+                            </div>
+                            <div class="dropdown-submenu">
+                                <a href="javascript:void(0)">动态指标</a>
+                                <div class="dropdown-subcontent">
+                                    <a href="../statistics/red-dynamic/cold-hot.html">冷热比</a>
+                                    <a href="../statistics/red-dynamic/repeat.html">重号</a>
+                                    <a href="../statistics/red-dynamic/neighbor.html">邻号</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a href="javascript:void(0)">蓝球</a>
+                        <div class="dropdown-subcontent">
+                            <a href="../statistics/blue/zone4.html">四区</a>
+                            <a href="../statistics/blue/size.html">大小</a>
+                            <a href="../statistics/blue/odd-even.html">奇偶</a>
+                            <a href="../statistics/blue/cold-hot.html">冷热</a>
+                            <a href="../statistics/blue/amplitude.html">振幅</a>
+                            <a href="../statistics/blue/tail.html">尾数</a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li><a href="basic-trend.html" class="active">基本走势图</a></li>
+            <li><a href="../cold-numbers/cold-numbers.html">冷门统计</a></li>
+            <li><a href="../prediction/prediction.html">脑机结合预测</a></li>
+        </ul>
+    </nav>
+
+    <h1>基本走势图</h1>
     
     <div id="loading" class="loading">正在加载数据，请稍候...</div>
     <div id="error" class="error"></div>
     <div id="resultContainer"></div>
     
+    <!-- 分页控件 -->
+    <div class="pagination" id="pagination-controls"></div>
+    
     <script src="../../js/basic-trend.js"></script>
+    <script>
+        // 分页逻辑
+        function generatePagination(totalPages, currentPage) {
+            let paginationHTML = '';
+            const maxVisiblePages = 5;
+            
+            // 上一页按钮
+            paginationHTML += `<a href="#" class="${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">上一页</a>`;
+            
+            // 始终显示第一页
+            if (currentPage > 2) {
+                paginationHTML += `<a href="#" class="page-start" onclick="changePage(1)">1</a>`;
+                if (currentPage > 3) paginationHTML += `<span>...</span>`;
+            }
+            
+            // 中间页码
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `<a href="#" class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</a>`;
+            }
+            
+            // 始终显示最后一页
+            if (currentPage < totalPages - 1) {
+                if (currentPage < totalPages - 2) paginationHTML += `<span>...</span>`;
+                paginationHTML += `<a href="#" class="page-end" onclick="changePage(${totalPages})">${totalPages}</a>`;
+            }
+            
+            // 下一页按钮
+            paginationHTML += `<a href="#" class="${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">下一页</a>`;
+            
+            document.getElementById('pagination-controls').innerHTML = paginationHTML;
+        }
+        
+        function changePage(page) {
+            // 这里添加实际的分页逻辑
+            console.log('切换到页码:', page);
+            // 示例：加载对应页码的数据
+            // loadData(page);
+        }
+        
+        // 初始化时生成分页（示例：假设总共有10页，当前第1页）
+        window.onload = function() {
+            generatePagination(10, 1);
+        };
+    </script>
 </body>
 </html>
