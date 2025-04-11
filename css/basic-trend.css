@@ -1,51 +1,161 @@
+/* ================= 导航栏及顶部样式 ================= */
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+header {
+    background: #e74c3c;
+    color: white;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+}
+
+nav {
+    background: #c0392b;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    position: relative;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 1rem;
+    display: block;
+}
+
+nav ul li a:hover {
+    background: #a5281b;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1001;
+    top: 100%;
+    left: 0;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-subcontent {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: -10px;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1002;
+}
+
+.dropdown-submenu:nth-child(2) .dropdown-subcontent {
+    top: 0;
+}
+
+.dropdown-submenu:hover > .dropdown-subcontent {
+    display: block !important;
+    animation: menuSlide 0.3s ease-out;
+}
+
+@keyframes menuSlide {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 768px) {
+    nav ul { flex-direction: column; }
+    .dropdown-content { position: static; }
+    .dropdown-subcontent { position: static; left: auto; }
+}
+
+/* ================= 走势图样式（保持原样） ================= */
+/* 注意：这里开始的所有代码都不要修改 */
 body {
     font-family: Arial, sans-serif;
     margin: 20px auto;
-    width: calc(100% - 1160px); /* 总宽度减去两边距 */
+    width: calc(100% - 1160px);
     position: relative;
 }
+
 h1 {
     text-align: center;
     margin-bottom: 20px;
 }
+
 table {
     border-collapse: collapse;
     width: 100%;
     margin-bottom: 20px;
 }
+
 th, td {
     border: 1px solid #ddd;
     padding: 6px;
     text-align: center;
     font-size: 12px;
 }
+
 th {
     background-color: #f2f2f2;
     position: sticky;
     top: 0;
 }
-/* 新增：第12、23、34列的右边框加粗 */
+
 td:nth-child(12), 
 td:nth-child(23), 
 td:nth-child(34) {
     border-right: 2px solid #999;
 }
-.zone-header {
-    background-color: #e6f7ff;
-}
-.tail-header {
-    background-color: #fff7e6;
-}
-.missed {
-    color: #999;
-}
-.present {
-    font-weight: bold;
-}
+
+.zone-header { background-color: #e6f7ff; }
+.tail-header { background-color: #fff7e6; }
+.missed { color: #999; }
+.present { font-weight: bold; }
+
 .sup {
     font-size: 0.7em;
     vertical-align: super;
 }
+
 .controls {
     margin-bottom: 20px;
     display: flex;
@@ -53,6 +163,7 @@ td:nth-child(34) {
     gap: 10px;
     flex-wrap: wrap;
 }
+
 button {
     padding: 8px 16px;
     background-color: #4CAF50;
@@ -61,12 +172,11 @@ button {
     border-radius: 4px;
     cursor: pointer;
 }
-button:hover {
-    background-color: #45a049;
-}
-.file-input {
-    display: none;
-}
+
+button:hover { background-color: #45a049; }
+
+.file-input { display: none; }
+
 .file-label {
     padding: 8px 16px;
     background-color: #2196F3;
@@ -74,20 +184,22 @@ button:hover {
     border-radius: 4px;
     cursor: pointer;
 }
-.file-label:hover {
-    background-color: #0b7dda;
-}
+
+.file-label:hover { background-color: #0b7dda; }
+
 .loading {
     text-align: center;
     margin: 20px;
     font-size: 16px;
     color: #666;
 }
+
 .error {
     color: red;
     text-align: center;
     margin: 20px;
 }
+
 .red-ball {
     display: inline-block;
     width: 18px;
@@ -99,6 +211,7 @@ button:hover {
     font-weight: bold;
     font-size: 12px;
 }
+
 .blue-ball {
     display: inline-block;
     width: 18px;
@@ -111,6 +224,7 @@ button:hover {
     font-size: 12px;
     position: relative;
 }
+
 .blue-ball .sup {
     position: absolute;
     top: -6px;
