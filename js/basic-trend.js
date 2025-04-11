@@ -1,24 +1,36 @@
 let csvData = null;
 
-// 读取CSV文件
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+// 页面加载时自动获取数据
+window.onload = function() {
+    fetchCSVData();
+};
+
+// 从服务器获取CSV数据
+function fetchCSVData() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('error').textContent = '';
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        csvData = e.target.result;
-        document.getElementById('error').textContent = '';
-    };
-    reader.onerror = function() {
-        document.getElementById('error').textContent = '读取文件失败';
-    };
-    reader.readAsText(file);
-});
+    // 使用相对路径访问数据文件
+    fetch('../data/ssqhistory.csv')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络响应不正常');
+            }
+            return response.text();
+        })
+        .then(text => {
+            csvData = text;
+            document.getElementById('loading').style.display = 'none })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = '加载数据失败: ' + error.message;
+            console.error('加载数据出错:', error);
+        });
+}
 
 function processData() {
     if (!csvData) {
-        document.getElementById('error').textContent = '请先选择CSV文件';
+        document.getElementById('error').textContent = '数据尚未加载完成，请稍后再试';
         return;
     }
     
