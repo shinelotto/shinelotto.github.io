@@ -13,14 +13,14 @@ function loadCSVData() {
     errorElement.textContent = '';
     
     // 使用fetch API获取CSV文件
-    fetch('../data/ssqhistory.csv')
+    fetch('../../data/ssqhistory.csv')
         .then(response => {
             if (!response.ok) {
                 throw new Error('网络响应不正常');
             }
             return response.text();
         })
-        .thenText => {
+        .then(Text => {
             const drawData = parseCSV(csvText);
             if (drawData.length === 0) {
                 throw new Error('CSV文件中没有有效数据');
