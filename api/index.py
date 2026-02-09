@@ -1,7 +1,7 @@
 # api/index.py - Vercel Serverless Functions 专用入口
 import os
 import sys
-from vercel_wsgi import handle  # 导入适配器
+from vercel_wsgi import handle  
 
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
