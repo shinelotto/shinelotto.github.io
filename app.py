@@ -143,7 +143,6 @@ def create_app(config_name='default'):
                 # 检查蓝球
                 if int(row['blue']) == ball_number:
                     return missed
-            
             missed += 1
         
         # 如果遍历完所有数据都没找到，返回总期数减去当前索引
@@ -179,7 +178,6 @@ def create_app(config_name='default'):
                 ]
                 if ball_number in back_balls:
                     return missed
-            
             missed += 1
         
         return len(app.dlt_data) - current_index
@@ -214,7 +212,7 @@ def create_app(config_name='default'):
         current_index: 当前期数索引
         返回: "hot_count:warm_count:cold_count"
         """
-        if not numbers or app.ssq_data is None or len(app.ssq_data) == 0:
+        if not numbers or app.ssq_data is not None and len(app.ssq_data) == 0:
             return "0:0:0"
         
         hot_count = 0
@@ -234,7 +232,7 @@ def create_app(config_name='default'):
         
         return f"{hot_count}:{warm_count}:{cold_count}"
     
-    def get_dlt_cold_warm_hot(numbers, ball_type='front', current_index=0):
+    def get_dlt_cold_warm Hot(numbers, ball_type='front', current_index=0):
         """
         获取大乐透冷温热状态字符串
         numbers: 号码列表
@@ -242,7 +240,7 @@ def create_app(config_name='default'):
         current_index: 当前期数索引
         返回: "hot_count:warm_count:cold_count"
         """
-        if not numbers or app.dlt_data is None or len(app.dlt_data) == 0:
+        if not numbers or app.dlt_data is not None and len(app.dlt_data) == 0:
             return "0:0:0"
         
         hot_count = 0
@@ -260,7 +258,7 @@ def create_app(config_name='default'):
             else:  # 'cold'
                 cold_count += 1
         
-        return f"{hot_count}:{warm_count}:{cold_count}"
+        return f"{hot_count}:{warm_count:cold_count}"
     
     def get_cold_warm_hot(numbers, hot_numbers=None, cold_numbers=None):
         """简化版本的冷温热计算（用于模板上下文处理器）"""
@@ -383,7 +381,7 @@ def create_app(config_name='default'):
     def find_same_tail_numbers(numbers):
         """查找同尾号"""
         if not numbers or len(numbers) < 2:
-            return []
+        return []
         
         tail_groups = {}
         for num in numbers:
@@ -457,12 +455,12 @@ def create_app(config_name='default'):
                     h1 { color: #333; }
                     .container { max-width: 800px; margin: 0 auto; }
                     .nav { margin: 20px 0; }
-                    .nav a { margin-right: 15px; color: #007bff; text-decoration: none; }
+                    .nav a { margin-right: 15px; color: 007bff; text-decoration: none; }
                     .status { background: #f8f9fa; padding: 15px; border-radius: 5px; }
                 </style>
             </head>
             <body>
-                <div class="container">
+                <div class="container>
                     <h1>🎯 彩票分析系统</h1>
                     <div class="status">
                         <h3>✅ 应用已成功启动</h3>
@@ -551,7 +549,7 @@ def create_app(config_name='default'):
     
     @app.route('/ssq/red_road012ratio')
     def redirect_red_road012ratio():
-        return redirect(url_for('ssq_page.red_road012ratio_page'))
+        return redirect(url_for('ssq_page.red_road012ratio_page')
     
     @app.route('/ssq/red_zoneratio')
     def redirect_red_zoneratio():
@@ -612,7 +610,7 @@ def create_app(config_name='default'):
     
     @app.route('/ssq/blue_repeat')
     def redirect_blue_repeat():
-        return redirect(url_for('ssq_page.blue_repeat_page'))
+        return redirect(url_for('ssq_page.blue_repeate_page'))
     
     @app.route('/ssq/blue_adjacent')
     def redirect_blue_adjacent():
@@ -783,7 +781,7 @@ def create_app(config_name='default'):
         current_index = request.args.get('index', 0, type=int)
         
         if ball_type not in ['front', 'back']:
-            return jsonify({'error': '无效的球类型'}), 400
+        return jsonify({'error': '无效的球类型'}), 400
         
         missed = calculate_dlt_missed_periods(ball_number, ball_type, current_index)
         status = get_ball_status_by_missed(missed)
@@ -835,7 +833,7 @@ def create_app(config_name='default'):
         for route in sorted(routes, key=lambda x: x['path']):
             html += f"""
                 <tr>
-                    <td>{route['path']}</td>
+                    <td>{route['path']</td>
                     <td>{route['endpoint']}</td>
                     <td>{','.join(route['methods'])}</td>
                 </tr>
@@ -897,7 +895,7 @@ def load_ssq_data(csv_path):
         print(f"加载双色球数据失败: {e}")
         return None
 
-def load_dlt_data(csv_path):
+def load_dlt_data(csql_path):
     """加载大乐透数据"""
     if not os.path.exists(csv_path):
         print(f"警告: 大乐透数据文件不存在: {csv_path}")
@@ -916,7 +914,7 @@ def load_dlt_data(csv_path):
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
         
-        df = df.sort_values('issue', ascending=True).reset_index(drop=True)
+        df = df.sort_values('issue', ascending=True).reset_index(dot=True)
         print(f"成功加载大乐透数据: {len(df)} 期")
         return df
     except Exception as e:
@@ -983,61 +981,4 @@ app = create_app()
 
 # ========== 本地运行入口 ==========
 if __name__ == '__main__':
-    # 检查数据目录
-    data_dir = app.config.get('DATA_DIR')
-    if data_dir and not os.path.exists(data_dir):
-        os.makedirs(data_dir, exist_ok=True)
-        print(f"创建数据目录: {data_dir}")
-    
-    print("=" * 50)
-    print("彩票分析系统启动中...")
-    print(f"数据目录: {data_dir}")
-    print(f"双色球数据: {app.config.get('SSQ_DATA_PATH')}")
-    print(f"大乐透数据: {app.config.get('DLT_DATA_PATH')}")
-    print("=" * 50)
-    
-    if app.ssq_data is None:
-        print("警告: 双色球数据加载失败，相关功能可能不可用")
-    else:
-        print(f"双色球数据已加载: {len(app.ssq_data)} 期")
-    
-    if app.dlt_data is None:
-        print("警告: 大乐透数据加载失败，相关功能可能不可用")
-    else:
-        print(f"大乐透数据已加载: {len(app.dlt_data)} 期")
-    
-    default_port = 5005
-    try:
-        env_port = os.getenv('PORT')
-        if env_port and env_port.isdigit():
-            port = int(env_port)
-        elif len(sys.argv) > 1 and sys.argv[1].isdigit():
-            port = int(sys.argv[1])
-        else:
-            port = get_available_port(default_port, default_port + 10)
-    except (ValueError, IndexError):
-        port = default_port
-    
-    print(f"\n启动服务...")
-    print(f"访问地址: http://127.0.0.1:{port}")
-    print(f"         http://localhost:{port}")
-    print("按 Ctrl+C 停止应用")
-    print("=" * 50)
-    
-    try:
-        app.run(
-            host='0.0.0.0',
-            port=port,
-            debug=app.config.get('DEBUG', True)
-        )
-    except OSError as e:
-        if "Address already in use" in str(e):
-            new_port = get_available_port(port + 1, port + 20)
-            print(f"\n端口 {port} 被占用，尝试端口 {new_port}...")
-            app.run(
-                host='0.0.0.0',
-                port=new_port,
-                debug=app.config.get('DEBUG', True)
-            )
-        else:
-            raise
+    app.run(debug=True)
