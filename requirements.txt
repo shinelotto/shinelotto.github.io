@@ -1,7 +1,6 @@
 Flask==2.3.3
-Werkzeug==2.3.7
+Flask-Caching==2.0.2
 pandas==2.2.0
 numpy==1.26.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
-vercel-wsgi==0.4.0  
