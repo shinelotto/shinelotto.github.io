@@ -21,8 +21,12 @@ from datetime import datetime
 # 加载环境变量
 load_dotenv()
 
+# 创建全局应用实例
+app = None
+
 def create_app(config_name='default'):
     """创建Flask应用"""
+    global app
     app = Flask(__name__, 
                static_folder='static',
                template_folder='templates')
@@ -37,17 +41,11 @@ def create_app(config_name='default'):
     app.ssq_data = load_ssq_data(app.config.get('SSQ_DATA_PATH'))
     app.dlt_data = load_dlt_data(app.config.get('DLT_DATA_PATH'))
     
-    # 创建辅助函数
-    def get_ssq_latest_issue():
-        """获取双色球最新期号"""
-        if app.ssq_data is not None and len(app.ssq_data) > 0:
-            return str(app.ssq_data.iloc[-1]['issue'])
-        return "---"
-    
+    # ========== 添加缺失的函数定义（在 inject_globals() 之前）==========
     def get_ssq_latest_red_balls():
-        """获取双色球最新红球号码"""
+        """获取双色球最新红球号码（已排序）"""
         if app.ssq_data is not None and len(app.ssq_data) > 0:
-            return [
+            red_balls = [
                 int(app.ssq_data.iloc[-1]['red1']),
                 int(app.ssq_data.iloc[-1]['red2']),
                 int(app.ssq_data.iloc[-1]['red3']),
@@ -55,6 +53,7 @@ def create_app(config_name='default'):
                 int(app.ssq_data.iloc[-1]['red5']),
                 int(app.ssq_data.iloc[-1]['red6'])
             ]
+            return sorted(red_balls)
         return [1, 2, 3, 4, 5, 6]  # 默认值
     
     def get_ssq_latest_blue_ball():
@@ -63,31 +62,27 @@ def create_app(config_name='default'):
             return int(app.ssq_data.iloc[-1]['blue'])
         return 1  # 默认值
     
-    def get_dlt_latest_issue():
-        """获取大乐透最新期号"""
-        if app.dlt_data is not None and len(app.dlt_data) > 0:
-            return str(app.dlt_data.iloc[-1]['issue'])
-        return "---"
-    
     def get_dlt_latest_front_balls():
-        """获取大乐透最新前区号码"""
+        """获取大乐透最新前区号码（已排序）"""
         if app.dlt_data is not None and len(app.dlt_data) > 0:
-            return [
+            front_balls = [
                 int(app.dlt_data.iloc[-1]['front1']),
                 int(app.dlt_data.iloc[-1]['front2']),
                 int(app.dlt_data.iloc[-1]['front3']),
                 int(app.dlt_data.iloc[-1]['front4']),
                 int(app.dlt_data.iloc[-1]['front5'])
             ]
+            return sorted(front_balls)
         return [1, 2, 3, 4, 5]  # 默认值
     
     def get_dlt_latest_back_balls():
-        """获取大乐透最新后区号码"""
+        """获取大乐透最新后区号码（已排序）"""
         if app.dlt_data is not None and len(app.dlt_data) > 0:
-            return [
+            back_balls = [
                 int(app.dlt_data.iloc[-1]['back1']),
                 int(app.dlt_data.iloc[-1]['back2'])
             ]
+            return sorted(back_balls)
         return [1, 2]  # 默认值
     
     def get_ssq_total_count():
@@ -102,7 +97,7 @@ def create_app(config_name='default'):
             return len(app.dlt_data)
         return 0
     
-    # 新增的全局模板函数
+    # 原有的其他函数定义
     def get_current_time():
         """获取当前时间"""
         return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -272,7 +267,134 @@ def create_app(config_name='default'):
         # 实际使用时应该在具体的蓝图函数中调用准确的函数
         return "0:0:0"
     
-    # 注册模板上下文处理器
+    # ========== 模板全局函数 ==========
+    def get_zone_ratio(numbers, total_numbers=33, zones=3):
+        """获取区间比"""
+        if not numbers:
+            return ':'.join(['0'] * zones)
+        
+        zone_size = total_numbers // zones
+        zone_counts = [0] * zones
+        
+        for num in numbers:
+            zone_index = (num - 1) // zone_size
+            if zone_index >= zones:
+                zone_index = zones - 1
+            zone_counts[zone_index] += 1
+        
+        return ':'.join(str(count) for count in zone_counts)
+    
+    def calculate_statistics(numbers):
+        """计算统计指标"""
+        if not numbers:
+            return {
+                'sum': 0,
+                'range': 0,
+                'acValue': 0,
+                'sizeRatio': '0:0',
+                'primeRatio': '0:0',
+                'road012Ratio': '0:0:0',
+                'oddEvenRatio': '0:0'
+            }
+        
+        # 排序
+        sorted_nums = sorted(numbers)
+        
+        # 和值
+        sum_value = sum(numbers)
+        
+        # 跨度
+        span = max(numbers) - min(numbers) if numbers else 0
+        
+        # AC值
+        ac_value = calculate_ac_value(numbers)
+        
+        # 大小比（以16为分界线）
+        big_count = sum(1 for n in numbers if n > 16)
+        small_count = len(numbers) - big_count
+        size_ratio = f"{big_count}:{small_count}"
+        
+        # 质合比
+        prime_numbers = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
+        prime_count = sum(1 for n in numbers if n in prime_numbers)
+        composite_count = len(numbers) - prime_count
+        prime_ratio = f"{prime_count}:{composite_count}"
+        
+        # 012路比
+        road_counts = {0: 0, 1: 0, 2: 0}
+        for n in numbers:
+            road_counts[n % 3] += 1
+        road012_ratio = f"{road_counts[0]}:{road_counts[1]}:{road_counts[2]}"
+        
+        # 奇偶比
+        odd_count = sum(1 for n in numbers if n % 2 == 1)
+        even_count = len(numbers) - odd_count
+        odd_even_ratio = f"{odd_count}:{even_count}"
+        
+        return {
+            'sum': sum_value,
+            'range': span,
+            'acValue': ac_value,
+            'sizeRatio': size_ratio,
+            'primeRatio': prime_ratio,
+            'road012Ratio': road012_ratio,
+            'oddEvenRatio': odd_even_ratio
+        }
+    
+    def calculate_ac_value(numbers):
+        """计算AC值"""
+        if len(numbers) < 2:
+            return 0
+        
+        numbers_sorted = sorted(numbers)
+        differences = set()
+        
+        for i in range(len(numbers_sorted)):
+            for j in range(i + 1, len(numbers_sorted)):
+                differences.add(abs(numbers_sorted[i] - numbers_sorted[j]))
+        
+        return len(differences) - (len(numbers) - 1)
+    
+    def find_consecutive_numbers(numbers):
+        """查找连号"""
+        if not numbers or len(numbers) < 2:
+            return []
+        
+        sorted_nums = sorted(numbers)
+        consecutive_groups = []
+        current_group = []
+        
+        for i, num in enumerate(sorted_nums):
+            if not current_group:
+                current_group.append(num)
+            elif num == current_group[-1] + 1:
+                current_group.append(num)
+            else:
+                if len(current_group) >= 2:
+                    consecutive_groups.append(current_group.copy())
+                current_group = [num]
+        
+        if len(current_group) >= 2:
+            consecutive_groups.append(current_group)
+        
+        return consecutive_groups
+    
+    def find_same_tail_numbers(numbers):
+        """查找同尾号"""
+        if not numbers or len(numbers) < 2:
+            return []
+        
+        tail_groups = {}
+        for num in numbers:
+            tail = num % 10
+            if tail not in tail_groups:
+                tail_groups[tail] = []
+            tail_groups[tail].append(num)
+        
+        # 只返回有多个号码的尾数组
+        return [group for group in tail_groups.values() if len(group) > 1]
+    
+    # ========== 注册模板上下文处理器 ==========
     @app.context_processor
     def inject_globals():
         return {
@@ -284,10 +406,8 @@ def create_app(config_name='default'):
             'get_cold_warm_hot': get_cold_warm_hot,
             'get_ball_status_by_missed': get_ball_status_by_missed,
             'calculate_missed_periods': calculate_missed_periods,
-            'get_ssq_latest_issue': get_ssq_latest_issue,
             'get_ssq_latest_red_balls': get_ssq_latest_red_balls,
             'get_ssq_latest_blue_ball': get_ssq_latest_blue_ball,
-            'get_dlt_latest_issue': get_dlt_latest_issue,
             'get_dlt_latest_front_balls': get_dlt_latest_front_balls,
             'get_dlt_latest_back_balls': get_dlt_latest_back_balls,
             'get_ssq_total_count': get_ssq_total_count,
@@ -297,44 +417,38 @@ def create_app(config_name='default'):
             'get_dlt_last_update': get_dlt_last_update
         }
     
-    # 注册页面蓝图
+    # ========== 注册蓝图 ==========
     app.register_blueprint(ssq_page_bp)
     app.register_blueprint(dlt_page_bp)
-
-    # 注册API蓝图
     app.register_blueprint(ssq_api_bp)
     app.register_blueprint(dlt_api_bp)
     
     # 在应用级别设置蓝图中的数据变量
-    # 这确保蓝图函数可以访问加载的数据
     with app.app_context():
         # 导入蓝图中的数据变量
-        from blueprints.ssq_bp import ssq_data
-        from blueprints.dlt_bp import dlt_data
-        
-        # 将应用级数据赋给蓝图级变量
         import blueprints.ssq_bp
         import blueprints.dlt_bp
         
+        # 将应用级数据赋给蓝图级变量
         blueprints.ssq_bp.ssq_data = app.ssq_data
         blueprints.dlt_bp.dlt_data = app.dlt_data
     
-    # ==================== 添加兼容性路由解决模板链接问题 ====================
+    # ========== 添加兼容性路由解决模板链接问题 ==========
     
     # 双色球兼容性路由
     @app.route('/ssq/red_basic_trend')
     def redirect_red_basic_trend():
         """兼容性路由：重定向到正确的页面路由"""
-        return redirect(url_for('ssq_page.red_basic_trend_page'))  # 修正端点名
+        return redirect(url_for('ssq_page.red_basic_trend_page'))
     
     @app.route('/ssq/blue_basic')
     def redirect_blue_basic():
         """兼容性路由：重定向到正确的页面路由"""
-        return redirect(url_for('ssq_page.blue_basic_page'))  # 修正端点名
+        return redirect(url_for('ssq_page.blue_basic_page'))
     
     @app.route('/ssq/red_dragonhead')
     def redirect_red_dragonhead():
-        return redirect(url_for('ssq_page.red_dragonhead_page'))  # 修正端点名
+        return redirect(url_for('ssq_page.red_dragonhead_page'))
     
     @app.route('/ssq/red_phoenixtail')
     def redirect_red_phoenixtail():
@@ -432,15 +546,15 @@ def create_app(config_name='default'):
     # 大乐透兼容性路由
     @app.route('/dlt/front_basic_trend')
     def redirect_dlt_front_basic_trend():
-        return redirect(url_for('dlt_page.front_basic_trend_page'))  # 修正端点名
-
+        return redirect(url_for('dlt_page.front_basic_trend_page'))
+    
     @app.route('/dlt/back_basic')
     def redirect_dlt_back_basic():
-        return redirect(url_for('dlt_page.back_basic_page'))  # 修正端点名
-
+        return redirect(url_for('dlt_page.back_basic_page'))
+    
     @app.route('/dlt/front_dragonhead')
     def redirect_front_dragonhead():
-        return redirect(url_for('dlt_page.front_dragonhead_page'))  # 修正端点名
+        return redirect(url_for('dlt_page.front_dragonhead_page'))
     
     @app.route('/dlt/front_phoenixtail')
     def redirect_front_phoenixtail():
@@ -546,22 +660,19 @@ def create_app(config_name='default'):
     def redirect_back_adjacent():
         return redirect(url_for('dlt_page.back_adjacent_page'))
 
-    # ==================== 路由定义结束 ====================
+    # ========== 基本路由 ==========
     
-    # 首页路由
     @app.route('/')
     def index():
         return render_template('index.html')
     
-    # 双色球主页路由
     @app.route('/ssq')
     def ssq_home():
-        return redirect(url_for('ssq_page.red_basic_trend_page'))  # 修正端点名
+        return redirect(url_for('ssq_page.red_basic_trend_page'))
     
-    # 大乐透主页路由
     @app.route('/dlt')
     def dlt_home():
-        return redirect(url_for('dlt_page.front_basic_trend_page'))  # 修正端点名
+        return redirect(url_for('dlt_page.front_basic_trend_page'))
     
     # API路由
     @app.route('/api/ssq/trend')
@@ -574,7 +685,6 @@ def create_app(config_name='default'):
         data = get_dlt_trend_data(app.dlt_data) if app.dlt_data is not None else []
         return jsonify(data)
     
-    # 遗漏数据API
     @app.route('/api/ssq/missed/<int:ball_number>')
     def ssq_missed_api(ball_number):
         """获取双色球号码遗漏数据"""
@@ -615,7 +725,6 @@ def create_app(config_name='default'):
             'status_zh': '热' if status == 'hot' else '温' if status == 'warm' else '冷'
         })
     
-    # 健康检查路由
     @app.route('/health')
     def health_check():
         return jsonify({
@@ -626,7 +735,6 @@ def create_app(config_name='default'):
             }
         })
     
-    # 调试路由
     @app.route('/debug/routes')
     def debug_routes():
         """显示所有注册的路由"""
@@ -666,7 +774,6 @@ def create_app(config_name='default'):
         
         return html
     
-    # 错误处理
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template('error.html', error='页面未找到'), 404
@@ -677,7 +784,7 @@ def create_app(config_name='default'):
     
     return app
 
-# 数据加载函数
+# ========== 数据加载函数 ==========
 def load_ssq_data(csv_path):
     """加载双色球数据"""
     if not os.path.exists(csv_path):
@@ -686,23 +793,18 @@ def load_ssq_data(csv_path):
     
     try:
         df = pd.read_csv(csv_path)
-        # 检查列名
         if len(df.columns) >= 8:
             df.columns = ['issue', 'red1', 'red2', 'red3', 'red4', 'red5', 'red6', 'blue']
         else:
-            # 尝试自动检测列名
             print(f"警告: CSV文件列数不足，尝试使用前{len(df.columns)}列")
             columns = ['issue', 'red1', 'red2', 'red3', 'red4', 'red5', 'red6', 'blue']
             df.columns = columns[:len(df.columns)]
         
-        # 转换为整数
         for col in ['red1', 'red2', 'red3', 'red4', 'red5', 'red6', 'blue']:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
         
-        # 按期号排序（从旧到新）
         df = df.sort_values('issue', ascending=True).reset_index(drop=True)
-        
         print(f"成功加载双色球数据: {len(df)} 期")
         return df
     except Exception as e:
@@ -717,23 +819,18 @@ def load_dlt_data(csv_path):
     
     try:
         df = pd.read_csv(csv_path)
-        # 检查列名
         if len(df.columns) >= 8:
             df.columns = ['issue', 'front1', 'front2', 'front3', 'front4', 'front5', 'back1', 'back2']
         else:
-            # 尝试自动检测列名
             print(f"警告: CSV文件列数不足，尝试使用前{len(df.columns)}列")
             columns = ['issue', 'front1', 'front2', 'front3', 'front4', 'front5', 'back1', 'back2']
             df.columns = columns[:len(df.columns)]
         
-        # 转换为整数
         for col in ['front1', 'front2', 'front3', 'front4', 'front5', 'back1', 'back2']:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
         
-        # 按期号排序（从旧到新）
         df = df.sort_values('issue', ascending=True).reset_index(drop=True)
-        
         print(f"成功加载大乐透数据: {len(df)} 期")
         return df
     except Exception as e:
@@ -750,7 +847,6 @@ def get_ssq_trend_data(df):
         red_balls = [int(row['red1']), int(row['red2']), int(row['red3']), 
                      int(row['red4']), int(row['red5']), int(row['red6'])]
         
-        # 创建numbers字典
         numbers = {}
         for num in range(1, 34):
             numbers[str(num).zfill(2)] = num in red_balls
@@ -783,133 +879,6 @@ def get_dlt_trend_data(df):
     
     return data
 
-# 模板全局函数
-def get_zone_ratio(numbers, total_numbers=33, zones=3):
-    """获取区间比"""
-    if not numbers:
-        return ':'.join(['0'] * zones)
-    
-    zone_size = total_numbers // zones
-    zone_counts = [0] * zones
-    
-    for num in numbers:
-        zone_index = (num - 1) // zone_size
-        if zone_index >= zones:
-            zone_index = zones - 1
-        zone_counts[zone_index] += 1
-    
-    return ':'.join(str(count) for count in zone_counts)
-
-def calculate_statistics(numbers):
-    """计算统计指标"""
-    if not numbers:
-        return {
-            'sum': 0,
-            'range': 0,
-            'acValue': 0,
-            'sizeRatio': '0:0',
-            'primeRatio': '0:0',
-            'road012Ratio': '0:0:0',
-            'oddEvenRatio': '0:0'
-        }
-    
-    # 排序
-    sorted_nums = sorted(numbers)
-    
-    # 和值
-    sum_value = sum(numbers)
-    
-    # 跨度
-    span = max(numbers) - min(numbers) if numbers else 0
-    
-    # AC值
-    ac_value = calculate_ac_value(numbers)
-    
-    # 大小比（以16为分界线）
-    big_count = sum(1 for n in numbers if n > 16)
-    small_count = len(numbers) - big_count
-    size_ratio = f"{big_count}:{small_count}"
-    
-    # 质合比
-    prime_numbers = {1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
-    prime_count = sum(1 for n in numbers if n in prime_numbers)
-    composite_count = len(numbers) - prime_count
-    prime_ratio = f"{prime_count}:{composite_count}"
-    
-    # 012路比
-    road_counts = {0: 0, 1: 0, 2: 0}
-    for n in numbers:
-        road_counts[n % 3] += 1
-    road012_ratio = f"{road_counts[0]}:{road_counts[1]}:{road_counts[2]}"
-    
-    # 奇偶比
-    odd_count = sum(1 for n in numbers if n % 2 == 1)
-    even_count = len(numbers) - odd_count
-    odd_even_ratio = f"{odd_count}:{even_count}"
-    
-    return {
-        'sum': sum_value,
-        'range': span,
-        'acValue': ac_value,
-        'sizeRatio': size_ratio,
-        'primeRatio': prime_ratio,
-        'road012Ratio': road012_ratio,
-        'oddEvenRatio': odd_even_ratio
-    }
-
-def calculate_ac_value(numbers):
-    """计算AC值"""
-    if len(numbers) < 2:
-        return 0
-    
-    numbers_sorted = sorted(numbers)
-    differences = set()
-    
-    for i in range(len(numbers_sorted)):
-        for j in range(i + 1, len(numbers_sorted)):
-            differences.add(abs(numbers_sorted[i] - numbers_sorted[j]))
-    
-    return len(differences) - (len(numbers) - 1)
-
-def find_consecutive_numbers(numbers):
-    """查找连号"""
-    if not numbers or len(numbers) < 2:
-        return []
-    
-    sorted_nums = sorted(numbers)
-    consecutive_groups = []
-    current_group = []
-    
-    for i, num in enumerate(sorted_nums):
-        if not current_group:
-            current_group.append(num)
-        elif num == current_group[-1] + 1:
-            current_group.append(num)
-        else:
-            if len(current_group) >= 2:
-                consecutive_groups.append(current_group.copy())
-            current_group = [num]
-    
-    if len(current_group) >= 2:
-        consecutive_groups.append(current_group)
-    
-    return consecutive_groups
-
-def find_same_tail_numbers(numbers):
-    """查找同尾号"""
-    if not numbers or len(numbers) < 2:
-        return []
-    
-    tail_groups = {}
-    for num in numbers:
-        tail = num % 10
-        if tail not in tail_groups:
-            tail_groups[tail] = []
-        tail_groups[tail].append(num)
-    
-    # 只返回有多个号码的尾数组
-    return [group for group in tail_groups.values() if len(group) > 1]
-
 def get_available_port(start_port=5000, end_port=5050):
     """获取可用的端口"""
     for port in range(start_port, end_port + 1):
@@ -921,18 +890,24 @@ def get_available_port(start_port=5000, end_port=5050):
         except OSError:
             continue
     
-    return start_port  # 如果都不可用，返回起始端口
+    return start_port
 
+# ========== 创建应用实例（Vercel 需要这个）==========
+app = create_app()
+
+# ========== Vercel 服务器less函数入口 ==========
+def handler(request, context):
+    """Vercel Serverless函数入口"""
+    return app(request.environ, request.start_response) if hasattr(request, 'environ') else app
+
+# ========== 本地运行入口 ==========
 if __name__ == '__main__':
-    app = create_app()
-    
     # 检查数据目录
     data_dir = app.config.get('DATA_DIR')
     if data_dir and not os.path.exists(data_dir):
         os.makedirs(data_dir, exist_ok=True)
         print(f"创建数据目录: {data_dir}")
     
-    # 运行应用
     print("=" * 50)
     print("彩票分析系统启动中...")
     print(f"数据目录: {data_dir}")
@@ -950,23 +925,18 @@ if __name__ == '__main__':
     else:
         print(f"大乐透数据已加载: {len(app.dlt_data)} 期")
     
-    # 获取端口
     default_port = 5005
     try:
-        # 从环境变量获取端口
         env_port = os.getenv('PORT')
         if env_port and env_port.isdigit():
             port = int(env_port)
-        # 从命令行参数获取端口
         elif len(sys.argv) > 1 and sys.argv[1].isdigit():
             port = int(sys.argv[1])
         else:
-            # 检查默认端口是否可用
             port = get_available_port(default_port, default_port + 10)
     except (ValueError, IndexError):
         port = default_port
     
-    # 启动应用
     print(f"\n启动服务...")
     print(f"访问地址: http://127.0.0.1:{port}")
     print(f"         http://localhost:{port}")
@@ -981,7 +951,6 @@ if __name__ == '__main__':
         )
     except OSError as e:
         if "Address already in use" in str(e):
-            # 端口被占用，尝试其他端口
             new_port = get_available_port(port + 1, port + 20)
             print(f"\n端口 {port} 被占用，尝试端口 {new_port}...")
             app.run(
