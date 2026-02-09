@@ -978,14 +978,8 @@ def get_available_port(start_port=5000, end_port=5050):
     
     return start_port
 
-# ========== 创建应用实例（Vercel 需要这个）==========
+# ========== 创建应用实例 ==========
 app = create_app()
-
-# ========== 创建 Flask 应用实例 ==========
-app = create_app()
-
-# Vercel 需要的应用实例（与上面的 app 是同一个对象）
-application = app
 
 # ========== 本地运行入口 ==========
 if __name__ == '__main__':
