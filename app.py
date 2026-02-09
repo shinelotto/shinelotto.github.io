@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-彩票分析系统主应用
+彩票分析系统主应用 - Vercel 兼容修复版
 基于CSV数据文件，提供双色球和大乐透的走势分析
 """
 
 import os
 import sys
 import socket
-from flask import Flask, render_template, redirect, url_for, jsonify, request
+import traceback
+from flask import Flask, render_template, redirect, url_for, jsonify, request, send_from_directory
 from config import config
 # 修改导入语句
 from blueprints.ssq_bp import ssq_page_bp, ssq_api_bp, load_ssq_data as load_ssq_data_for_blueprint
@@ -417,6 +418,80 @@ def create_app(config_name='default'):
             'get_dlt_last_update': get_dlt_last_update
         }
     
+    # ========== 修复：处理网站图标请求（避免不必要的500错误）==========
+    @app.route('/favicon.ico')
+    def favicon():
+        """处理favicon.ico请求 - 避免浏览器重复请求导致的500错误"""
+        try:
+            # 尝试返回静态文件夹中的图标
+            return send_from_directory(os.path.join(app.root_path, 'static'),
+                                     'favicon.ico', mimetype='image/vnd.microsoft.icon')
+        except:
+            # 如果没有图标文件，返回204 No Content（避免错误）
+            return '', 204
+    
+    @app.route('/favicon.png')
+    def favicon_png():
+        """处理favicon.png请求"""
+        try:
+            return send_from_directory(os.path.join(app.root_path, 'static'),
+                                     'favicon.png', mimetype='image/png')
+        except:
+            return '', 204
+    
+    # ========== 修复：确保主页能正常访问 ==========
+    @app.route('/')
+    def index():
+        """主页路由 - 确保最基本的请求能正常响应"""
+        try:
+            print("主页被访问")
+            # 先返回简单的HTML测试页面
+            return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>彩票分析系统</title>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h1 { color: #333; }
+                    .container { max-width: 800px; margin: 0 auto; }
+                    .nav { margin: 20px 0; }
+                    .nav a { margin-right: 15px; color: #007bff; text-decoration: none; }
+                    .status { background: #f8f9fa; padding: 15px; border-radius: 5px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>🎯 彩票分析系统</h1>
+                    <div class="status">
+                        <h3>✅ 应用已成功启动</h3>
+                        <p>这是一个测试页面，验证Flask应用在Vercel上正常运行。</p>
+                        <p>数据加载状态：</p>
+                        <ul>
+                            <li>双色球数据: {}</li>
+                            <li>大乐透数据: {}</li>
+                        </ul>
+                    </div>
+                    <div class="nav">
+                        <a href="/health">健康检查</a>
+                        <a href="/debug/routes">查看所有路由</a>
+                        <a href="/ssq">双色球分析</a>
+                        <a href="/dlt">大乐透分析</a>
+                    </div>
+                    <p>当前时间：{}</p>
+                </div>
+            </body>
+            </html>
+            """.format(
+                "已加载 {} 期".format(len(app.ssq_data)) if app.ssq_data is not None else "未加载",
+                "已加载 {} 期".format(len(app.dlt_data)) if app.dlt_data is not None else "未加载",
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            )
+        except Exception as e:
+            print(f"主页处理出错: {str(e)}")
+            return f"主页暂时无法访问，错误: {str(e)}", 500
+    
     # ========== 注册蓝图 ==========
     app.register_blueprint(ssq_page_bp)
     app.register_blueprint(dlt_page_bp)
@@ -659,12 +734,8 @@ def create_app(config_name='default'):
     @app.route('/dlt/back_adjacent')
     def redirect_back_adjacent():
         return redirect(url_for('dlt_page.back_adjacent_page'))
-
-    # ========== 基本路由 ==========
     
-    @app.route('/')
-    def index():
-        return render_template('index.html')
+    # ========== 基本路由 ==========
     
     @app.route('/ssq')
     def ssq_home():
@@ -727,11 +798,15 @@ def create_app(config_name='default'):
     
     @app.route('/health')
     def health_check():
+        """健康检查路由 - 确保最基本的API能正常工作"""
         return jsonify({
             'status': 'healthy',
+            'timestamp': datetime.now().isoformat(),
             'data_loaded': {
                 'ssq': app.ssq_data is not None,
-                'dlt': app.dlt_data is not None
+                'ssq_count': len(app.ssq_data) if app.ssq_data is not None else 0,
+                'dlt': app.dlt_data is not None,
+                'dlt_count': len(app.dlt_data) if app.dlt_data is not None else 0
             }
         })
     
@@ -774,13 +849,24 @@ def create_app(config_name='default'):
         
         return html
     
+    # ========== 修复：添加详细的错误处理 ==========
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template('error.html', error='页面未找到'), 404
     
     @app.errorhandler(500)
     def internal_server_error(e):
-        return render_template('error.html', error='服务器内部错误'), 500
+        """详细的500错误处理 - 在Vercel日志中打印错误信息"""
+        error_details = f"500错误详情:\n{str(e)}\n\n{traceback.format_exc()}"
+        print(error_details)  # 这会在Vercel日志中显示
+        return "服务器内部错误，请稍后再试", 500
+    
+    @app.errorhandler(Exception)
+    def handle_unexpected_error(error):
+        """处理所有未捕获的异常"""
+        error_details = f"未捕获的异常:\n{str(error)}\n\n{traceback.format_exc()}"
+        print(error_details)  # 这会在Vercel日志中显示
+        return "发生意外错误，请稍后再试", 500
     
     return app
 
@@ -895,10 +981,13 @@ def get_available_port(start_port=5000, end_port=5050):
 # ========== 创建应用实例（Vercel 需要这个）==========
 app = create_app()
 
-# ========== Vercel 服务器less函数入口 ==========
-def handler(request, context):
-    """Vercel Serverless函数入口"""
-    return app(request.environ, request.start_response) if hasattr(request, 'environ') else app
+# ========== Vercel Serverless函数适配器 ==========
+def handler(event, context):
+    """Vercel Serverless函数入口点"""
+    return app(event, context) if hasattr(app, '__call__') else None
+
+# 确保Vercel能识别应用实例
+application = app
 
 # ========== 本地运行入口 ==========
 if __name__ == '__main__':
