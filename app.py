@@ -19,9 +19,9 @@ def home():
         <title>Vercel 功能测试</title>
         <meta charset="utf-8">
         <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: green; }
-            .status { background: #f0f8ff; padding: 15px; border-radius: 5px; }
+            body {{ font-family: Arial, sans-serif; padding: 20px; }}
+            h1 {{ color: green; }}
+            .status {{ background: #f0f8ff; padding: 15px; border-radius: 5px; }}
         </style>
     </head>
     <body>
