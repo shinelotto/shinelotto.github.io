@@ -7,40 +7,37 @@ import traceback
 # 确保正确解析到项目根目录
 current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, current_dir)
+sys.path.insert(0, os.path.join(current_dir, 'blueprints'))
+sys.path.insert(0, os.path.join(current_dir, 'utils'))
 
 # ========== 安全导入 Flask 应用 ==========
 try:
     from app import app
     print("✅ 成功导入 Flask 应用")
+    
+    # 创建符合 Vercel 规范的 WSGI 应用
+    from vercel_wsgi import handle
+    handler = handle(app)
+    
 except ImportError as e:
     print(f"❌ 导入错误: {str(e)}")
     print(traceback.format_exc())
-    # 创建空应用防止崩溃
+    
+    # 创建简单的回退应用
     from flask import Flask
     app = Flask(__name__)
+    
     @app.route('/')
     def fallback():
         return "应用配置错误，请检查日志", 500
-
-# ========== Vercel 适配器 ==========
-def handler(event, context):
-    """
-    Vercel Serverless Function 标准入口
-    参数:
-        event: 包含请求信息的字典
-        context: 运行时上下文对象
-    返回:
-        Flask 响应对象
-    """
-    try:
-        return app(event, context)
-    except Exception as e:
-        print(f"⚠️ Handler执行错误: {str(e)}")
+    
+    # 简单 handler
+    def handler(event, context):
         return {
-            'statusCode': 500,
-            'body': 'Internal Server Error'
+            'statusCode': 200,
+            'headers': {'Content-Type': 'text/plain'},
+            'body': 'Fallback handler'
         }
 
-# ========== 备用导出方案 ==========
-# 某些 Vercel 版本需要直接导出 app 对象
-application = app
+# 备用导出
+application = handler if 'handler' in locals() else None
