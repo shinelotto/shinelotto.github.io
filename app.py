@@ -1,3 +1,8 @@
+import time
+
+def create_app(config_name='default'):
+    start_time = time.time()
+
 # app.py - 最小化 Flask 应用
 from flask import Flask, jsonify, render_template
 import pandas as pd
@@ -40,3 +45,8 @@ def dlt_home():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+end_time = time.time()
+    print(f"🎯 应用启动耗时: {end_time - start_time:.2f} 秒")
+    
+    return app
