@@ -981,12 +981,10 @@ def get_available_port(start_port=5000, end_port=5050):
 # ========== 创建应用实例（Vercel 需要这个）==========
 app = create_app()
 
-# ========== Vercel Serverless函数适配器 ==========
-def handler(event, context):
-    """Vercel Serverless函数入口点"""
-    return app(event, context) if hasattr(app, '__call__') else None
+# ========== 创建 Flask 应用实例 ==========
+app = create_app()
 
-# 确保Vercel能识别应用实例
+# Vercel 需要的应用实例（与上面的 app 是同一个对象）
 application = app
 
 # ========== 本地运行入口 ==========
