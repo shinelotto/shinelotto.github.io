@@ -1,0 +1,174 @@
+{% extends "dlt/base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block chart_name %}后区凤尾走势图{% endblock %}
+
+{% block chart_content %}
+<div class="distribution-container">
+    <div class="chart-header">
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <div class="loading" id="loading">加载数据中...</div>
+            <div id="back-phoenixtail-chart" style="width: 100%; min-height: 600px; display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+let currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initPage();
+});
+
+function initPage() {
+    loadPhoenixtailData();
+}
+
+function loadPhoenixtailData() {
+    const loading = document.getElementById('loading');
+    const chartContainer = document.getElementById('back-phoenixtail-chart');
+    
+    loading.style.display = 'block';
+    chartContainer.style.display = 'none';
+
+    console.log('开始请求凤尾数据（使用后区基本走势API）...');
+    
+    fetch('/api/v1/dlt/back-basic-trend')
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('API返回数据:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                console.log('开始渲染凤尾走势图...');
+                currentData = data.data;
+                renderPhoenixtailChart(data.data);
+                loading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            } else {
+                console.log('没有有效数据');
+                loading.innerHTML = '暂无数据';
+            }
+        })
+        .catch(error => {
+            console.error('加载数据失败:', error);
+            loading.innerHTML = '加载失败: ' + error.message;
+        });
+}
+
+function renderPhoenixtailChart(data) {
+    const chartContainer = document.getElementById('back-phoenixtail-chart');
+    chartContainer.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        console.log('数据为空，显示"暂无数据"');
+        chartContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+        return;
+    }
+    
+    // 转换数据格式
+    const chartData = convertToChartFormat(data);
+    console.log('转换后的图表数据:', chartData);
+    
+    // ✅ 使用 charts.js 的 createParamTrendChart 方法
+    if (window.LotteryCharts && window.LotteryCharts.createParamTrendChart) {
+        console.log('使用 createParamTrendChart 绘制凤尾走势图');
+        window.LotteryCharts.createParamTrendChart(
+            chartContainer,  // 图表容器
+            chartData,       // 图表数据
+            'dlt',           // 彩票类型
+            'back',           // 区域类型
+            '凤尾'           // 参数名称
+        );
+    } else {
+        console.error('LotteryCharts.createParamTrendChart 不可用');
+        chartContainer.innerHTML = '<div class="no-data">图表功能暂不可用</div>';
+    }
+}
+
+function convertToChartFormat(apiData) {
+    console.log('开始转换数据格式，数据条数:', apiData.length);
+    
+    const issues = [];
+    const parameters = [];
+    
+    apiData.forEach((item, index) => {
+        issues.push(item.issue);
+        
+        // 提取后区数据并计算凤尾
+        const backBalls = item.back_balls || [];
+        const phoenixtail = backBalls.length > 0 ? Math.max(...backBalls) : 0;
+        
+        parameters.push({
+            '凤尾': phoenixtail
+        });
+    });
+    
+    return {
+        issues: issues,
+        parameters: parameters
+    };
+}
+</script>
+
+<style>
+.distribution-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-chart-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 0px solid #ddd;
+    border-radius: 4px;
+    min-height: 300px;
+    margin-top: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .distribution-container {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {    
+    .distribution-container {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

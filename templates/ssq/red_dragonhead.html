@@ -1,0 +1,218 @@
+{% extends "ssq/base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block chart_name %}红球龙头走势图{% endblock %}
+
+{% block chart_content %}
+<div class="distribution-container">
+    <div class="chart-header">
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <div class="loading" id="loading">加载数据中...</div>
+            <div id="red-dragonhead-chart" style="width: 100%; min-height: 600px; display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+let currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initPage();
+});
+
+function initPage() {
+    loadDragonheadData();
+}
+
+function loadDragonheadData() {
+    const loading = document.getElementById('loading');
+    const chartContainer = document.getElementById('red-dragonhead-chart');
+    
+    loading.style.display = 'block';
+    chartContainer.style.display = 'none';
+
+    console.log('开始请求龙头数据（使用红球基本走势API）...');
+    
+    fetch('/api/v1/ssq/red-basic-trend')
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('API返回数据:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                console.log('开始渲染龙头走势图...');
+                currentData = data.data;
+                renderDragonheadChart(data.data);
+                loading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            } else {
+                console.log('没有有效数据');
+                loading.innerHTML = '暂无数据';
+            }
+        })
+        .catch(error => {
+            console.error('加载数据失败:', error);
+            loading.innerHTML = '加载失败: ' + error.message;
+        });
+}
+
+function convertToChartFormat(apiData) {
+    console.log('开始转换数据格式，数据条数:', apiData.length);
+    
+    const issues = [];
+    const parameters = [];
+    const rawDragonHeads = [];
+
+    const valueRanges = [
+        { min: 1, max: 2, label: '1-2' },
+        { min: 3, max: 4, label: '3-4' },
+        { min: 5, max: 6, label: '5-6' },
+        { min: 7, max: 8, label: '7-8' },
+        { min: 9, max: 10, label: '9-10' },
+        { min: 11, max: 12, label: '11-12' },
+        { min: 13, max: 14, label: '13-14' },
+        { min: 15, max: 16, label: '15-16' },
+        { min: 17, max: 18, label: '17-18' },
+        { min: 19, max: 20, label: '19-20' },
+        { min: 21, max: 22, label: '21-22' },
+        { min: 23, max: 24, label: '23-24' },
+        { min: 25, max: 26, label: '25-26' },
+        { min: 27, max: 28, label: '27-28' }
+    ];
+    
+    apiData.forEach((item, index) => {
+        issues.push(item.issue);
+        
+        // 提取红球数据并计算龙头
+        const redBalls = item.red_balls || [];
+        const dragonhead = redBalls.length > 0 ? Math.min(...redBalls) : 0;
+
+        rawDragonHeads.push(dragonhead);
+
+        const matchedRange = valueRanges.find(range => 
+            dragonhead >= range.min && dragonhead <= range.max
+        );
+        
+        parameters.push({
+            '龙头': matchedRange ? matchedRange.label : '超出范围'
+        });
+    });
+    
+    return {
+        issues: issues,
+        parameters: parameters,
+        rawDragonHeads: rawDragonHeads
+    };
+}
+
+// ✅ 使用 charts.js 的 createParamTrendChart 方法
+function renderDragonheadChart(data) {
+    const chartContainer = document.getElementById('red-dragonhead-chart');
+    chartContainer.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        console.log('数据为空，显示"暂无数据"');
+        chartContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+        return;
+    }
+    
+    const chartData = convertToChartFormat(data);
+    
+    if (window.LotteryCharts && window.LotteryCharts.createParamTrendChart) {
+        console.log('使用 createParamTrendChart 绘制龙头走势图');
+        window.LotteryCharts.createParamTrendChart(
+            chartContainer,
+            chartData,
+            'ssq',
+            'red',
+            '龙头'
+        );
+        
+        // ✅ 核心修复：替换球体内文字
+        setTimeout(() => replaceBallTexts(chartContainer, chartData.rawDragonHeads), 100);
+    } else {
+        chartContainer.innerHTML = '<div class="no-data">图表功能暂不可用</div>';
+    }
+}
+
+// ✅ 新增辅助函数
+function replaceBallTexts(container, rawValues) {
+    if (!container || !rawValues.length) return;
+    
+    const circles = container.querySelectorAll('circle.param-trend-dot');
+    circles.forEach((circle, index) => {
+        if (index < rawValues.length) {
+            const text = circle.nextElementSibling;
+            if (text && text.tagName === 'text') {
+                const originalValue = rawValues[index];
+                if (originalValue !== undefined && originalValue !== null && originalValue !== 0) {
+                    // 格式化龙头号码（小于10补0）
+                    const formattedValue = originalValue < 10 ? '0' + originalValue : originalValue.toString();
+                    text.textContent = formattedValue;
+                }
+            }
+        }
+    });
+}
+</script>
+<style>
+.distribution-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-chart-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 0px solid #ddd;
+    border-radius: 4px;
+    min-height: 300px;
+    margin-top: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .distribution-container {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {    
+    .distribution-container {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

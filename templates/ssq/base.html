@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ chart_name }} - 双色球分析{% endblock %}
+
+{% block page_title %}SSQ分析{% endblock %}
+
+{% block subnav %}
+<!-- 子导航 - 改为网格布局 -->
+<nav id="ssq-subnav" class="sub-nav ssq-subnav">
+    <div class="container">
+        <!-- 红球分析区域 -->
+        <div class="tab-section">
+            <h4 class="tab-section-title">红球</h4>
+            <div class="nav-grid">
+                <a href="{{ url_for('ssq_page.red_basic_trend_page') }}" 
+                    class="nav-link {% if request.endpoint == 'ssq_page.red_basic_trend_page' %}active{% endif %}"
+                    data-chart="red-basic-trend">
+                    基本走势图
+                </a>
+                <a href="{{ url_for('ssq_page.red_dragonhead_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_dragonhead_page' %}active{% endif %}"
+                   data-chart="red-dragonhead">
+                    龙头
+                </a>
+                <a href="{{ url_for('ssq_page.red_phoenixtail_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_phoenixtail_page' %}active{% endif %}"
+                   data-chart="red-phoenixtail">
+                    凤尾
+                </a>
+                <a href="{{ url_for('ssq_page.red_sum_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_sum_page' %}active{% endif %}"
+                   data-chart="red-sum">
+                    和值
+                </a>
+                <a href="{{ url_for('ssq_page.red_span_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_span_page' %}active{% endif %}"
+                   data-chart="red-span">
+                    跨度
+                </a>
+                <a href="{{ url_for('ssq_page.red_acvalue_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_acvalue_page' %}active{% endif %}"
+                   data-chart="red-acvalue">
+                    AC值
+                </a>
+                <a href="{{ url_for('ssq_page.red_sizeratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_sizeratio_page' %}active{% endif %}"
+                   data-chart="red-sizeratio">
+                    大小比
+                </a>
+                <a href="{{ url_for('ssq_page.red_primeratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_primeratio_page' %}active{% endif %}"
+                   data-chart="red-primeratio">
+                    质合比
+                </a>
+                <a href="{{ url_for('ssq_page.red_road012ratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_road012ratio_page' %}active{% endif %}"
+                   data-chart="red-012ratio">
+                    012路比
+                </a>
+                <a href="{{ url_for('ssq_page.red_zoneratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_zoneratio_page' %}active{% endif %}"
+                   data-chart="red-zoneratio">
+                    区间比
+                </a>
+                <a href="{{ url_for('ssq_page.red_oddevenratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_oddevenratio_page' %}active{% endif %}"
+                   data-chart="red-oddevenratio">
+                    奇偶比
+                </a>
+                <a href="{{ url_for('ssq_page.red_consecutive_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_consecutive_page' %}active{% endif %}"
+                   data-chart="red-consecutive">
+                    连号
+                </a>
+                <a href="{{ url_for('ssq_page.red_sametail_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_sametail_page' %}active{% endif %}"
+                   data-chart="red-sametail">
+                    同尾
+                </a>
+                <a href="{{ url_for('ssq_page.red_coldwarmhotratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_coldwarmhotratio_page' %}active{% endif %}"
+                   data-chart="red-coldwarmhot">
+                    冷温热比
+                </a>
+                <a href="{{ url_for('ssq_page.red_repeat_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_repeat_page' %}active{% endif %}"
+                   data-chart="red-repeat">
+                    重号
+                </a>
+                <a href="{{ url_for('ssq_page.red_adjacent_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.red_adjacent_page' %}active{% endif %}"
+                   data-chart="red-adjacent">
+                    邻号
+                </a>
+            </div>
+        </div>
+        
+        <!-- 蓝球分析区域 -->
+        <div class="tab-section">
+            <h4 class="tab-section-title">蓝球</h4>
+            <div class="nav-grid">
+                <a href="{{ url_for('ssq_page.blue_basic_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_basic_page' %}active{% endif %}"
+                   data-chart="blue-basic">
+                    基本走势图
+                </a>
+                <a href="{{ url_for('ssq_page.blue_amplitude_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_amplitude_page' %}active{% endif %}"
+                   data-chart="blue-amplitude">
+                    振幅
+                </a>
+                <a href="{{ url_for('ssq_page.blue_size_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_size_page' %}active{% endif %}"
+                   data-chart="blue-size">
+                    大小
+                </a>
+                <a href="{{ url_for('ssq_page.blue_prime_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_prime_page' %}active{% endif %}"
+                   data-chart="blue-prime">
+                    质合
+                </a>
+                <a href="{{ url_for('ssq_page.blue_road012_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_road012_page' %}active{% endif %}"
+                   data-chart="blue-012">
+                    012路
+                </a>
+                <a href="{{ url_for('ssq_page.blue_zone_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_zone_page' %}active{% endif %}"
+                   data-chart="blue-zone">
+                    区间
+                </a>
+                <a href="{{ url_for('ssq_page.blue_oddeven_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_oddeven_page' %}active{% endif %}"
+                   data-chart="blue-oddeven">
+                    奇偶
+                </a>
+                <a href="{{ url_for('ssq_page.blue_coldwarmhot_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_coldwarmhot_page' %}active{% endif %}"
+                   data-chart="blue-coldwarmhot">
+                    冷温热
+                </a>
+                <a href="{{ url_for('ssq_page.blue_repeat_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_repeat_page' %}active{% endif %}"
+                   data-chart="blue-repeat">
+                    重号
+                </a>
+                <a href="{{ url_for('ssq_page.blue_adjacent_page') }}" 
+                   class="nav-link {% if request.endpoint == 'ssq_page.blue_adjacent_page' %}active{% endif %}"
+                   data-chart="blue-adjacent">
+                    邻号
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ssq.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="ssq-content">
+    <div class="chart-header">
+        <h2>{{ chart_name }}</h2>
+        <div class="chart-info">
+            {% if get_ssq_last_update %}
+            <span class="info-item">数据更新至: {{ get_ssq_last_update() }}</span>
+            {% endif %}
+            {% if get_ssq_total_count %}
+            <span class="info-item">总期数: {{ get_ssq_total_count() }}</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% block chart_content %}{% endblock %}
+</div>
+{% endblock %}

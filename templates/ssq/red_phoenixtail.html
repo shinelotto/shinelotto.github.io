@@ -1,0 +1,218 @@
+{% extends "ssq/base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block chart_name %}红球凤尾走势图{% endblock %}
+
+{% block chart_content %}
+<div class="distribution-container">
+    <div class="chart-header">
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <div class="loading" id="loading">加载数据中...</div>
+            <div id="red-phoenixtail-chart" style="width: 100%; min-height: 600px; display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+let currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initPage();
+});
+
+function initPage() {
+    loadPhoenixtailData();
+}
+
+function loadPhoenixtailData() {
+    const loading = document.getElementById('loading');
+    const chartContainer = document.getElementById('red-phoenixtail-chart');
+    
+    loading.style.display = 'block';
+    chartContainer.style.display = 'none';
+
+    console.log('开始请求凤尾数据（使用红球基本走势API）...');
+    
+    fetch('/api/v1/ssq/red-basic-trend')
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('API返回数据:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                console.log('开始渲染凤尾走势图...');
+                currentData = data.data;
+                renderPhoenixtailChart(data.data);
+                loading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            } else {
+                console.log('没有有效数据');
+                loading.innerHTML = '暂无数据';
+            }
+        })
+        .catch(error => {
+            console.error('加载数据失败:', error);
+            loading.innerHTML = '加载失败: ' + error.message;
+        });
+}
+
+function convertToChartFormat(apiData) {
+    console.log('开始转换数据格式，数据条数:', apiData.length);
+    
+    const issues = [];
+    const parameters = [];
+    const rawPhoenixTails = [];
+
+    const valueRanges = [
+        { min: 32, max: 33, label: '32-33' },
+        { min: 30, max: 31, label: '30-31' },
+        { min: 28, max: 29, label: '28-29' },
+        { min: 26, max: 27, label: '26-27' },
+        { min: 24, max: 25, label: '24-25' },
+        { min: 22, max: 23, label: '22-23' },
+        { min: 20, max: 21, label: '20-21' },
+        { min: 18, max: 19, label: '18-19' },
+        { min: 16, max: 17, label: '16-17' },
+        { min: 14, max: 15, label: '14-15' },
+        { min: 12, max: 13, label: '12-13' },
+        { min: 10, max: 11, label: '10-11' },
+        { min: 8, max: 9, label: '8-9' },
+        { min: 6, max: 7, label: '6-7' }
+    ];
+    
+    apiData.forEach((item, index) => {
+        issues.push(item.issue);
+        
+        // 提取红球数据并计算凤尾
+        const redBalls = item.red_balls || [];
+        const phoenixtail = redBalls.length > 0 ? Math.max(...redBalls) : 0;
+
+        rawPhoenixTails.push(phoenixtail);
+
+        const matchedRange = valueRanges.find(range => 
+            phoenixtail >= range.min && phoenixtail <= range.max
+        );
+        
+        parameters.push({
+            '凤尾': matchedRange ? matchedRange.label : '超出范围'
+        });
+    });
+    
+    return {
+        issues: issues,
+        parameters: parameters,
+        rawPhoenixTails: rawPhoenixTails
+    };
+}
+
+function renderPhoenixtailChart(data) {
+    const chartContainer = document.getElementById('red-phoenixtail-chart');
+    chartContainer.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        console.log('数据为空，显示"暂无数据"');
+        chartContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+        return;
+    }
+    
+    const chartData = convertToChartFormat(data);
+    
+    if (window.LotteryCharts && window.LotteryCharts.createParamTrendChart) {
+        console.log('使用 createParamTrendChart 绘制凤尾走势图');
+        window.LotteryCharts.createParamTrendChart(
+            chartContainer,
+            chartData,
+            'ssq',
+            'red',
+            '凤尾'
+        );
+        
+        // ✅ 核心修复：替换球体内文字
+        setTimeout(() => replaceBallTexts(chartContainer, chartData.rawPhoenixTails), 100);
+    } else {
+        chartContainer.innerHTML = '<div class="no-data">图表功能暂不可用</div>';
+    }
+}
+
+// ✅ 新增辅助函数
+function replaceBallTexts(container, rawValues) {
+    if (!container || !rawValues.length) return;
+    
+    const circles = container.querySelectorAll('circle.param-trend-dot');
+    circles.forEach((circle, index) => {
+        if (index < rawValues.length) {
+            const text = circle.nextElementSibling;
+            if (text && text.tagName === 'text') {
+                const originalValue = rawValues[index];
+                if (originalValue !== undefined && originalValue !== null && originalValue !== 0) {
+                    // 格式化凤尾号码（小于10补0）
+                    const formattedValue = originalValue < 10 ? '0' + originalValue : originalValue.toString();
+                    text.textContent = formattedValue;
+                }
+            }
+        }
+    });
+}
+</script>
+
+<style>
+.distribution-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-chart-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 0px solid #ddd;
+    border-radius: 4px;
+    min-height: 300px;
+    margin-top: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .distribution-container {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {    
+    .distribution-container {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

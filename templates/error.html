@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block title %}错误 - {{ error }}{% endblock %}
+
+{% block page_title %}出错啦！{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-icon">
+        <div class="error-symbol">!</div>
+    </div>
+    
+    <h2>{{ error }}</h2>
+    
+    <p>抱歉，系统遇到了一个错误。这可能是因为：</p>
+    <ul>
+        <li>请求的页面不存在</li>
+        <li>数据文件可能不存在或格式不正确</li>
+        <li>服务器暂时无法处理您的请求</li>
+    </ul>
+    
+    <div class="error-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">返回首页</a>
+        <button onclick="window.history.back()" class="btn btn-secondary">返回上一页</button>
+        <button onclick="window.location.reload()" class="btn btn-secondary">刷新页面</button>
+    </div>
+    
+    <div class="error-details">
+        <p>错误详情:</p>
+        <pre>{{ error_details or '未知错误' }}</pre>
+    </div>
+</div>
+
+<style>
+.error-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+    background: #e74c3c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-symbol {
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.error-container h2 {
+    margin-bottom: 1rem;
+    color: #e74c3c;
+}
+
+.error-container p {
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.error-container ul {
+    text-align: left;
+    margin-bottom: 2rem;
+    padding-left: 1.5rem;
+}
+
+.error-container li {
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+}
+
+.error-details {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.error-details p {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.error-details pre {
+    background: white;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .error-container {
+        margin: 1rem auto;
+        padding: 1rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

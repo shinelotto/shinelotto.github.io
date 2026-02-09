@@ -1,0 +1,239 @@
+{% extends "dlt/base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block chart_name %}后区基本走势图{% endblock %}
+
+{% block chart_content %}
+<div class="trend-container">
+    
+    <div class="trend-body">
+        <!-- 使用 charts.js 绘制的图表容器 -->
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <div class="loading" id="loading">加载数据中...</div>
+            <div id="back-basic-trend-chart" style="width: 100%; min-height: 600px; display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 引入 charts.js -->
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+// 全局变量
+let currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化页面
+    initPage();
+});
+
+function initPage() {
+    // 加载数据
+    loadTrendData();
+}
+
+function loadTrendData() {
+    const loading = document.getElementById('loading');
+    const chartContainer = document.getElementById('back-basic-trend-chart');
+    
+    loading.style.display = 'block';
+    chartContainer.style.display = 'none';
+    
+    // 从API获取数据
+    fetch('/api/v1/dlt/back-basic-trend')
+        .then(response => {
+            console.log('1. API响应状态:', response.status, response.ok);
+            return response.json();
+        })
+        .then(data => {
+            console.log('2. API返回的数据:', data);
+            console.log('3. 数据条数:', data.data ? data.data.length : 0);
+        
+            if (data.success && data.data && data.data.length > 0) {
+                console.log('4. 开始渲染图表...');
+                currentData = data.data;
+                renderBasicTrendChart(data.data);
+                loading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            } else {
+                console.log('5. 没有有效数据');
+                loading.innerHTML = '暂无数据';
+            }
+        })
+        .catch(error => {
+            console.error('6. 加载数据失败:', error);
+            console.error('错误详情:', error.stack);
+            loading.innerHTML = '加载失败: ' + error.message;
+        });
+}
+
+function renderBasicTrendChart(data) {
+    const chartContainer = document.getElementById('back-basic-trend-chart');
+    chartContainer.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        chartContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+        return;
+    }
+    
+    // 转换数据格式，适配 charts.js 的 createBasicTrendChart 函数
+    const chartData = convertToChartFormat(data);
+    
+    // 创建图表
+    const chart = new LotteryCharts();
+    chartInstance = chart.createBasicTrendChart(
+        chartContainer,
+        chartData,
+        'dlt',   
+        'back'   
+    );
+    
+    // 保存图表实例以便后续交互
+    window.currentChart = chartInstance;
+}
+
+function convertToChartFormat(apiData) {
+    // API数据需要转换为 charts.js 需要的格式
+    const issues = [];
+    const winningNumbers = [];
+    const backBalls = [];
+    const status = [];
+    const parameters = [];
+    
+    // 按CSV顺序
+    const dataInCsvOrder = apiData;
+    
+    // 计算遗漏期数
+    const missedPeriodsMap = calculateMissedPeriods(apiData);
+
+     // 保存到全局，供 getMissedPeriods 使用
+    window.missedPeriodsMap = missedPeriodsMap;
+    
+    dataInCsvOrder.forEach(item => {
+        // 期号
+        issues.push(item.issue);
+        
+        // 开奖号码（后区号码）
+        const backBalls = item.back_balls || [];
+        winningNumbers.push(backBalls);
+        
+        // 冷温热状态
+        const ballStatus = {};
+        for (let i = 1; i <= 12; i++) {
+            const missed = missedPeriodsMap[i] || 0;
+            if (missed < 4) {
+                ballStatus[i] = 'hot';      // 热号
+            } else if (missed <= 16) {
+                ballStatus[i] = 'warm';     // 温号
+            } else {
+                ballStatus[i] = 'cold';     // 冷号
+            }
+        }
+        status.push(ballStatus);
+        
+        // 计算各项参数
+        parameters.push({
+            '龙头': item.dragon_head,
+            '凤尾': item.phoenix_tail, 
+            '和值': item.sum_value,
+            '跨度': item.span,
+            '大小比': item.size_ratio,
+            '质合比': item.prime_ratio,
+            '012路比': item.road012_ratio,
+            '区间比': item.zone_ratio,
+            '奇偶比': item.odd_even_ratio,
+            '冷温热比': item.cold_warm_hot_ratio,
+            '重号': item.repeat_count,
+            '邻号': item.adjacent_count       
+        });
+    });
+    
+    return {
+        issues: issues,
+        winningNumbers: winningNumbers,
+        status: status,
+        parameters: parameters
+    };
+}
+
+function calculateMissedPeriods(data) {
+    // 计算每个号码的遗漏期数
+    const missedPeriods = {};
+    const allBalls = new Set();
+    
+    // 收集所有出现的后区号码
+    data.forEach(item => {
+        (item.back_balls || []).forEach(ball => allBalls.add(ball));
+    });
+    
+    // 初始化遗漏期数
+    allBalls.forEach(ball => missedPeriods[ball] = 0);
+    
+    // 计算每个号码的遗漏期数
+    data.forEach(item => {
+        const currentBalls = new Set(item.back_balls || []);
+        
+        allBalls.forEach(ball => {
+            if (!currentBalls.has(ball)) {
+                missedPeriods[ball]++;
+            } else {
+                missedPeriods[ball] = 0; // 重置遗漏期数
+            }
+        });
+    });
+    
+    return missedPeriods;
+}
+</script>
+
+<style>
+.trend-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-chart-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 0px solid #ddd;
+    border-radius: 0px;
+    min-height: 300px;
+    margin-top: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+}
+
+@media (max-width: 480px) {
+    .trend-controls {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

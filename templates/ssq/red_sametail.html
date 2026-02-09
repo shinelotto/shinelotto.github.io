@@ -1,0 +1,263 @@
+{% extends "ssq/base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block chart_name %}红球同尾走势图{% endblock %}
+
+{% block chart_content %}
+<div class="distribution-container">
+    <div class="chart-header">
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <div class="loading" id="loading">加载数据中...</div>
+            <div id="red-sametail-chart" style="width: 100%; min-height: 600px; display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+let currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initPage();
+});
+
+function initPage() {
+    loadSametailData();
+}
+
+function loadSametailData() {
+    const loading = document.getElementById('loading');
+    const chartContainer = document.getElementById('red-sametail-chart');
+    
+    loading.style.display = 'block';
+    chartContainer.style.display = 'none';
+
+    console.log('开始请求同尾数据（使用红球基本走势API）...');
+    
+    fetch('/api/v1/ssq/red-basic-trend')
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('API返回数据:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                console.log('开始渲染同尾走势图...');
+                currentData = data.data;
+                renderSametailChart(data.data);
+                loading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            } else {
+                console.log('没有有效数据');
+                loading.innerHTML = '暂无数据';
+            }
+        })
+        .catch(error => {
+            console.error('加载数据失败:', error);
+            loading.innerHTML = '加载失败: ' + error.message;
+        });
+}
+
+function renderSametailChart(data) {
+    const chartContainer = document.getElementById('red-sametail-chart');
+    chartContainer.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        console.log('数据为空，显示"暂无数据"');
+        chartContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+        return;
+    }
+    
+    // 转换数据格式
+    const chartData = convertToChartFormat(data);
+    console.log('转换后的图表数据:', chartData);
+    
+    // ✅ 使用 charts.js 的 createParamTrendChart 方法
+    if (window.LotteryCharts && window.LotteryCharts.createParamTrendChart) {
+        console.log('使用 createParamTrendChart 绘制同尾走势图');
+        
+        const chart = window.LotteryCharts.createParamTrendChart(
+            chartContainer,  // 图表容器
+            chartData,       // 图表数据
+            'ssq',           // 彩票类型
+            'red',           // 区域类型
+            '同尾'           // 参数名称
+        );
+        
+        // ✅ 关键：在图表渲染后，修改列名为简化格式
+        setTimeout(() => {
+            simplifyChartDisplay(chartContainer);
+        }, 100);
+        
+    } else {
+        console.error('LotteryCharts.createParamTrendChart 不可用');
+        chartContainer.innerHTML = '<div class="no-data">图表功能暂不可用</div>';
+    }
+}
+
+function convertToChartFormat(apiData) {
+    console.log('开始转换数据格式，数据条数:', apiData.length);
+    
+    const issues = [];
+    const parameters = [];
+    
+    // ✅ 直接从API数据中获取同尾信息，确保和基本走势图一致
+    apiData.forEach((item, index) => {
+        issues.push(item.issue);
+        
+        // 直接使用API返回的同尾描述
+        // API中的 same_tail_desc 字段已经正确计算了同尾类型
+        const sametailDesc = item.same_tail_desc || "无同尾";
+        
+        console.log(`第${item.issue}期: same_tail_desc=${sametailDesc}, red_balls=${item.red_balls}`);
+        
+        parameters.push({
+            '同尾': sametailDesc
+        });
+    });
+    
+    return {
+        issues: issues,
+        parameters: parameters
+    };
+}
+
+// ✅ 关键函数：简化图表显示
+function simplifyChartDisplay(container) {
+    if (!container) return;
+    
+    console.log('开始简化同尾图表显示...');
+    
+    // 简化映射表
+    const simplifyMapping = {
+        '无同尾': '0',
+        '2同尾': '2',
+        '3同尾': '3',
+        '4同尾': '4',
+        '2同尾+2同尾': '2+2',
+        '2同尾+3同尾': '2+3',
+        '2同尾+4同尾': '2+4',
+        '3同尾+3同尾': '3+3',
+        '2同尾+2同尾+2同尾': '2+2+2'
+    };
+    
+    // 1. 查找并修改所有表头文本
+    const allTexts = container.querySelectorAll('text');
+    let headerCount = 0;
+    
+    allTexts.forEach(text => {
+        const originalText = text.textContent.trim();
+        
+        // 判断是否是表头行文本（y坐标较小的文本）
+        const textY = parseFloat(text.getAttribute('y') || '0');
+        
+        // 表头行通常在顶部，y坐标较小
+        if (textY < 30) {
+            // 这是表头文本
+            if (simplifyMapping[originalText]) {
+                text.textContent = simplifyMapping[originalText];
+                headerCount++;
+                console.log(`表头: ${originalText} -> ${simplifyMapping[originalText]}`);
+            }
+        }
+    });
+    
+    // 2. 查找并修改球体内部的文本
+    const circleGroups = container.querySelectorAll('g circle.param-trend-dot');
+    circleGroups.forEach((circle, index) => {
+        // 查找紧跟在circle后面的text元素
+        const nextElement = circle.nextElementSibling;
+        if (nextElement && nextElement.tagName === 'text') {
+            const originalText = nextElement.textContent.trim();
+            if (simplifyMapping[originalText]) {
+                nextElement.textContent = simplifyMapping[originalText];
+                console.log(`球体${index+1}: ${originalText} -> ${simplifyMapping[originalText]}`);
+            }
+        }
+    });
+    
+    console.log(`简化完成：修改了 ${headerCount} 个表头文本`);
+}
+</script>
+
+<style>
+.distribution-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-chart-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 0px solid #ddd;
+    border-radius: 4px;
+    min-height: 300px;
+    margin-top: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* ✅ 简化后的样式优化 */
+#red-sametail-chart text {
+    font-size: 11px !important;
+    font-weight: bold !important;
+    text-anchor: middle !important;
+}
+
+/* 球体内部文本样式 */
+#red-sametail-chart circle.param-trend-dot + text {
+    font-size: 10px !important;
+    font-weight: bold !important;
+    fill: white !important;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .distribution-container {
+        padding: 1rem;
+    }
+    
+    #red-sametail-chart text {
+        font-size: 9px !important;
+    }
+    
+    #red-sametail-chart circle.param-trend-dot + text {
+        font-size: 8px !important;
+    }
+}
+
+@media (max-width: 480px) {    
+    .distribution-container {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

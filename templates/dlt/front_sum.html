@@ -1,0 +1,208 @@
+{% extends "dlt/base.html" %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block chart_name %}前区和值走势图{% endblock %}
+
+{% block chart_content %}
+<div class="distribution-container">
+    <div class="chart-header">
+        <div class="trend-chart-wrapper" id="trend-chart-wrapper">
+            <div class="loading" id="loading">加载数据中...</div>
+            <div id="front-sumvalue-chart" style="width: 100%; min-height: 600px; display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+let currentData = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initPage();
+});
+
+function initPage() {
+    loadSumvalueData();
+}
+
+function loadSumvalueData() {
+    const loading = document.getElementById('loading');
+    const chartContainer = document.getElementById('front-sumvalue-chart');
+    
+    loading.style.display = 'block';
+    chartContainer.style.display = 'none';
+
+    console.log('开始请求和值数据（使用前区基本走势API）...');
+    
+    fetch('/api/v1/dlt/front-basic-trend')
+        .then(response => {
+            console.log('API响应状态:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('API返回数据:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                console.log('开始渲染和值走势图...');
+                currentData = data.data;
+                renderSumvalueChart(data.data);
+                loading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            } else {
+                console.log('没有有效数据');
+                loading.innerHTML = '暂无数据';
+            }
+        })
+        .catch(error => {
+            console.error('加载数据失败:', error);
+            loading.innerHTML = '加载失败: ' + error.message;
+        });
+}
+
+function convertToChartFormat(apiData) {
+    console.log('开始转换数据格式，数据条数:', apiData.length);
+    
+    const issues = [];
+    const parameters = [];
+    const rawSumValues = [];
+
+    const valueRanges = [
+        { min: 15, max: 50, label: '15-50' },
+        { min: 51, max: 70, label: '51-70' },
+        { min: 71, max: 90, label: '71-90' },
+        { min: 91, max: 110, label: '91-110' },
+        { min: 111, max: 130, label: '111-130' },
+        { min: 131, max: 165, label: '131-165' }
+    ];
+    
+    apiData.forEach((item, index) => {
+        issues.push(item.issue);
+        
+        // 提取前区数据并计算和值
+        const frontBalls = item.front_balls || [];
+        const sumvalue = frontBalls.reduce((total, ball) => total + ball, 0);
+
+        rawSumValues.push(sumvalue);
+
+        const matchedRange = valueRanges.find(range => 
+            sumvalue >= range.min && sumvalue <= range.max
+        );
+        
+        parameters.push({
+            '和值': matchedRange ? matchedRange.label : '超出范围'
+        });
+    });
+    
+    return {
+        issues: issues,
+        parameters: parameters,
+        rawSumValues: rawSumValues
+    };
+}
+
+function renderSumvalueChart(data) {
+    const chartContainer = document.getElementById('front-sumvalue-chart');
+    chartContainer.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        console.log('数据为空，显示"暂无数据"');
+        chartContainer.innerHTML = '<div class="no-data">暂无数据</div>';
+        return;
+    }
+    
+    const chartData = convertToChartFormat(data);
+    
+    if (window.LotteryCharts && window.LotteryCharts.createParamTrendChart) {
+        console.log('使用 createParamTrendChart 绘制和值走势图');
+        window.LotteryCharts.createParamTrendChart(
+            chartContainer,
+            chartData,
+            'dlt',
+            'front',
+            '和值'
+        );
+        
+        // ✅ 核心修复：替换球体内文字
+        setTimeout(() => replaceBallTexts(chartContainer, chartData.rawSumValues), 100);
+    } else {
+        chartContainer.innerHTML = '<div class="no-data">图表功能暂不可用</div>';
+    }
+}
+
+// ✅ 新增辅助函数
+function replaceBallTexts(container, rawValues) {
+    if (!container || !rawValues.length) return;
+    
+    const circles = container.querySelectorAll('circle.param-trend-dot');
+    circles.forEach((circle, index) => {
+        if (index < rawValues.length) {
+            const text = circle.nextElementSibling;
+            if (text && text.tagName === 'text') {
+                const originalValue = rawValues[index];
+                if (originalValue !== undefined) {
+                    text.textContent = originalValue;
+                }
+            }
+        }
+    });
+}
+</script>
+
+<style>
+.distribution-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trend-chart-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 0px solid #ddd;
+    border-radius: 4px;
+    min-height: 300px;
+    margin-top: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .distribution-container {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {    
+    .distribution-container {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

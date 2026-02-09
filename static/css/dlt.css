@@ -1,0 +1,146 @@
+/* 大乐透特定样式 */
+
+/* 前区表格样式 */
+.front-table th {
+    background: linear-gradient(135deg, #ffeaea, #ffd4d4);
+    border-color: #ffb8b8;
+}
+
+.front-table .ball.red {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+/* 后区表格样式 */
+.back-table th {
+    background: linear-gradient(135deg, #e8f4fc, #d4e8fa);
+    border-color: #a8d3f0;
+}
+
+.back-table .ball.blue {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+}
+
+/* 开奖号码行 */
+.winning-row {
+    background-color: #fff9e6;
+}
+
+.winning-row:hover {
+    background-color: #fff4d6;
+}
+
+/* 当前期高亮 */
+.current-issue {
+    background-color: #e8f4ff !important;
+    border-left: 4px solid #3498db;
+}
+
+/* 统计标签 */
+.stat-tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    margin: 0.125rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.stat-tag.size-big {
+    background-color: #ffeaea;
+    color: #e74c3c;
+}
+
+.stat-tag.size-small {
+    background-color: #e8f4fc;
+    color: #3498db;
+}
+
+.stat-tag.prime {
+    background-color: #e8f7f0;
+    color: #27ae60;
+}
+
+.stat-tag.composite {
+    background-color: #f9e8fc;
+    color: #9b59b6;
+}
+
+.stat-tag.odd {
+    background-color: #fff4e6;
+    color: #e67e22;
+}
+
+.stat-tag.even {
+    background-color: #e6f2ff;
+    color: #3498db;
+}
+
+/* 遗漏值样式 */
+.omission-cell {
+    position: relative;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.omission-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.omission-hot {
+    background-color: #ffeaea;
+    border: 2px solid #e74c3c;
+}
+
+.omission-warm {
+    background-color: #fff9e6;
+    border: 2px solid #f39c12;
+}
+
+.omission-cold {
+    background-color: #e8f4fc;
+    border: 2px solid #3498db;
+}
+
+/* 走势图网格 */
+.trend-grid {
+    display: grid;
+    grid-template-columns: repeat(33, 1fr);
+    gap: 2px;
+    margin: 1rem 0;
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.grid-cell:hover {
+    transform: scale(1.1);
+    z-index: 1;
+}
+
+.grid-cell.selected {
+    background-color: #e74c3c;
+    color: white;
+    border-color: #c0392b;
+}
+
+.grid-cell.blue {
+    background-color: #3498db;
+    color: white;
+    border-color: #2980b9;

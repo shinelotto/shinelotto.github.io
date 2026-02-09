@@ -1,0 +1,277 @@
+/* 走势图特定样式 */
+.trend-table-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    margin-top: 1rem;
+}
+
+.trend-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 2000px;
+}
+
+.trend-table th {
+    background: #f8f9fa;
+    padding: 8px 4px;
+    text-align: center;
+    border: 1px solid #ddd;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.trend-table td {
+    padding: 6px 4px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    vertical-align: middle;
+    min-width: 28px;
+    height: 36px;
+}
+
+.number-cell {
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.number-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.number-cell.selected {
+    background-color: #fff5f5;
+}
+
+/* 球体样式 */
+.ball {
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: white;
+    margin: 0 auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.ball.red {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.ball.blue {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.ball.front {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.ball.back {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.ball:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* 冷温热球样式 */
+.ball.hot-ball {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+}
+
+.ball.warm-ball {
+    background: linear-gradient(135deg, #feca57, #ff9f43);
+    box-shadow: 0 0 8px rgba(254, 202, 87, 0.5);
+}
+
+.ball.cold-ball {
+    background: linear-gradient(135deg, #54a0ff, #2e86de);
+    box-shadow: 0 0 8px rgba(84, 160, 255, 0.5);
+}
+
+/* 表格列固定 */
+.issue-header, .issue-cell {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: #e8f4fc;
+    font-weight: 600;
+    color: #2980b9;
+}
+
+.blue-header, .blue-cell {
+    position: sticky;
+    left: 80px;
+    z-index: 5;
+    background: #e8f4fc;
+}
+
+/* 控制栏样式 */
+.trend-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+/* 颜色说明 */
+.color-legend {
+    margin-top: 2rem;
+    padding: 1.2rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.color-legend h4 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-text {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* 统计摘要 */
+.stats-summary {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-summary h4 {
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.summary-item {
+    padding: 1rem;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.summary-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    background: white;
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+}
+
+.summary-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #3498db;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .trend-table {
+        font-size: 0.7rem;
+    }
+    
+    .trend-table th,
+    .trend-table td {
+        padding: 4px 2px;
+        min-width: 24px;
+        height: 30px;
+    }
+    
+    .ball {
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        font-size: 0.7rem;
+    }
+    
+    .trend-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .period-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .trend-table {
+        font-size: 0.65rem;
+    }
+    
+    .ball {
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        font-size: 0.65rem;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

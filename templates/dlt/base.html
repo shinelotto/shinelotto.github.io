@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ chart_name }} - 大乐透分析{% endblock %}
+
+{% block page_title %}DLT分析{% endblock %}
+
+{% block subnav %}
+<!-- 子导航 - 改为网格布局 -->
+<nav id="dlt-subnav" class="sub-nav dlt-subnav">
+    <div class="container">
+        <!-- 前区分析区域 -->
+        <div class="tab-section">
+            <h4 class="tab-section-title">前区</h4>
+            <div class="nav-grid">
+                <a href="{{ url_for('dlt_page.front_basic_trend_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_basic_trend_page' %}active{% endif %}"
+                   data-chart="front-basic-trend">
+                    基本走势图
+                </a>
+                <a href="{{ url_for('dlt_page.front_dragonhead_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_dragonhead_page' %}active{% endif %}"
+                   data-chart="front-dragonhead">
+                    龙头
+                </a>
+                <a href="{{ url_for('dlt_page.front_phoenixtail_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_phoenixtail_page' %}active{% endif %}"
+                   data-chart="front-phoenixtail">
+                    凤尾
+                </a>
+                <a href="{{ url_for('dlt_page.front_sum_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_sum_page' %}active{% endif %}"
+                   data-chart="front-sum">
+                    和值
+                </a>
+                <a href="{{ url_for('dlt_page.front_span_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_span_page' %}active{% endif %}"
+                   data-chart="front-span">
+                    跨度
+                </a>
+                <a href="{{ url_for('dlt_page.front_acvalue_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_acvalue_page' %}active{% endif %}"
+                   data-chart="front-acvalue">
+                    AC值
+                </a>
+                <a href="{{ url_for('dlt_page.front_sizeratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_sizeratio_page' %}active{% endif %}"
+                   data-chart="front-sizeratio">
+                    大小比
+                </a>
+                <a href="{{ url_for('dlt_page.front_primeratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_primeratio_page' %}active{% endif %}"
+                   data-chart="front-primeratio">
+                    质合比
+                </a>
+                <a href="{{ url_for('dlt_page.front_road012ratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_road012ratio_page' %}active{% endif %}"
+                   data-chart="front-012ratio">
+                    012路比
+                </a>
+                <a href="{{ url_for('dlt_page.front_zoneratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_zoneratio_page' %}active{% endif %}"
+                   data-chart="front-zoneratio">
+                    区间比
+                </a>
+                <a href="{{ url_for('dlt_page.front_oddevenratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_oddevenratio_page' %}active{% endif %}"
+                   data-chart="front-oddevenratio">
+                    奇偶比
+                </a>
+                <a href="{{ url_for('dlt_page.front_consecutive_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_consecutive_page' %}active{% endif %}"
+                   data-chart="front-consecutive">
+                    连号
+                </a>
+                <a href="{{ url_for('dlt_page.front_sametail_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_sametail_page' %}active{% endif %}"
+                   data-chart="front-sametail">
+                    同尾
+                </a>
+                <a href="{{ url_for('dlt_page.front_coldwarmhotratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_coldwarmhotratio_page' %}active{% endif %}"
+                   data-chart="front-coldwarmhot">
+                    冷温热比
+                </a>
+                <a href="{{ url_for('dlt_page.front_repeat_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_repeat_page' %}active{% endif %}"
+                   data-chart="front-repeat">
+                    重号
+                </a>
+                <a href="{{ url_for('dlt_page.front_adjacent_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.front_adjacent_page' %}active{% endif %}"
+                   data-chart="front-adjacent">
+                    邻号
+                </a>
+            </div>
+        </div>
+        
+        <!-- 后区分析区域 -->
+        <div class="tab-section">
+            <h4 class="tab-section-title">后区</h4>
+            <div class="nav-grid">
+                <a href="{{ url_for('dlt_page.back_basic_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_basic_page' %}active{% endif %}"
+                   data-chart="back-basic">
+                    基本走势图
+                </a>
+                <a href="{{ url_for('dlt_page.back_dragonhead_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_dragonhead_page' %}active{% endif %}"
+                   data-chart="back-dragonhead">
+                    龙头
+                </a>
+                <a href="{{ url_for('dlt_page.back_phoenixtail_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_phoenixtail_page' %}active{% endif %}"
+                   data-chart="back-phoenixtail">
+                    凤尾
+                </a>
+                <a href="{{ url_for('dlt_page.back_sum_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_sum_page' %}active{% endif %}"
+                   data-chart="back-sum">
+                    和值
+                </a>
+                <a href="{{ url_for('dlt_page.back_span_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_span_page' %}active{% endif %}"
+                   data-chart="back-span">
+                    跨度
+                </a>
+                <a href="{{ url_for('dlt_page.back_sizeratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_sizeratio_page' %}active{% endif %}"
+                   data-chart="back-sizeratio">
+                    大小比
+                </a>
+                <a href="{{ url_for('dlt_page.back_primeratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_primeratio_page' %}active{% endif %}"
+                   data-chart="back-primeratio">
+                    质合比
+                </a>
+                <a href="{{ url_for('dlt_page.back_road012ratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_road012ratio_page' %}active{% endif %}"
+                   data-chart="back-012ratio">
+                    012路比
+                </a>
+                <a href="{{ url_for('dlt_page.back_zoneratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_zoneratio_page' %}active{% endif %}"
+                   data-chart="back-zoneratio">
+                    区间比
+                </a>
+                <a href="{{ url_for('dlt_page.back_oddevenratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_oddevenratio_page' %}active{% endif %}"
+                   data-chart="back-oddevenratio">
+                    奇偶比
+                </a>
+                <a href="{{ url_for('dlt_page.back_coldwarmhotratio_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_coldwarmhotratio_page' %}active{% endif %}"
+                   data-chart="back-coldwarmhot">
+                    冷温热比
+                </a>
+                <a href="{{ url_for('dlt_page.back_repeat_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_repeat_page' %}active{% endif %}"
+                   data-chart="back-repeat">
+                    重号
+                </a>
+                <a href="{{ url_for('dlt_page.back_adjacent_page') }}" 
+                   class="nav-link {% if request.endpoint == 'dlt_page.back_adjacent_page' %}active{% endif %}"
+                   data-chart="back-adjacent">
+                    邻号
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dlt.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dlt-content">
+    <div class="chart-header">
+        <h2>{{ chart_name }}</h2>
+        <div class="chart-info">
+            {% if get_dlt_last_update %}
+            <span class="info-item">数据更新至: {{ get_dlt_last_update() }}</span>
+            {% endif %}
+            {% if get_dlt_total_count %}
+            <span class="info-item">总期数: {{ get_dlt_total_count() }}</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% block chart_content %}{% endblock %}
+</div>
+{% endblock %}
